@@ -1,0 +1,265 @@
+{
+  "tool": "share-safe-renders/scan.py",
+  "version": "1.2.0",
+  "exit_code": 1,
+  "summary": {
+    "files_scanned": 6,
+    "files_with_findings": 5,
+    "findings": 12,
+    "records": 15,
+    "errors": 0,
+    "links_not_followed": 0,
+    "skipped_unrecognized": 1,
+    "unsupported_media": 0,
+    "ffprobe": "used",
+    "records_dropped": 0,
+    "dropped_by_class": {}
+  },
+  "findings": [
+    {
+      "file": "demo\\01_png_api_key_and_username.png",
+      "carrier": "png:tEXt",
+      "class": "P1",
+      "location": "tEXt[prompt]:node:9/inputs/image",
+      "node_id": "9",
+      "bypassed": false,
+      "length": 12,
+      "sha256_prefix": "a4ab3a67",
+      "severity": "medium",
+      "detail": "kind=windows_home",
+      "tags": []
+    },
+    {
+      "file": "demo\\01_png_api_key_and_username.png",
+      "carrier": "png:tEXt",
+      "class": "K2",
+      "location": "tEXt[prompt]:node:11/inputs/api_key",
+      "node_id": "11",
+      "bypassed": false,
+      "length": 51,
+      "sha256_prefix": "ac6bf22d",
+      "severity": "high",
+      "detail": "field=api_key",
+      "tags": []
+    },
+    {
+      "file": "demo\\01_png_api_key_and_username.png",
+      "carrier": "png:tEXt",
+      "class": "K1",
+      "location": "tEXt[prompt]:node:11/inputs/api_key",
+      "node_id": "11",
+      "bypassed": false,
+      "length": 51,
+      "sha256_prefix": "ac6bf22d",
+      "severity": "high",
+      "detail": "vendor=openai",
+      "tags": []
+    },
+    {
+      "file": "demo\\02_png_ztxt_webhook.png",
+      "carrier": "png:zTXt",
+      "class": "K3",
+      "location": "zTXt[workflow]:nodes[1]/widgets_values[0]",
+      "node_id": "7",
+      "bypassed": false,
+      "length": 120,
+      "sha256_prefix": "40be9012",
+      "severity": "high",
+      "detail": "kind=discord_webhook",
+      "tags": [
+        "H3"
+      ]
+    },
+    {
+      "file": "demo\\02_png_ztxt_webhook.png",
+      "carrier": "png:zTXt",
+      "class": "H3",
+      "location": "zTXt[workflow]:nodes[1]/widgets_values[0]",
+      "node_id": "7",
+      "bypassed": false,
+      "length": 120,
+      "sha256_prefix": "40be9012",
+      "severity": "high",
+      "detail": "companion of K3 (inside a compressed PNG chunk)",
+      "tags": [],
+      "companion_of": "K3"
+    },
+    {
+      "file": "demo\\03_png_bypassed_node_secret.png",
+      "carrier": "png:tEXt",
+      "class": "K2",
+      "location": "tEXt[workflow]:nodes[2]/widgets_values[0]/api_key",
+      "node_id": "12",
+      "bypassed": true,
+      "length": 51,
+      "sha256_prefix": "f976cc5f",
+      "severity": "high",
+      "detail": "field=api_key",
+      "tags": [
+        "H1"
+      ]
+    },
+    {
+      "file": "demo\\03_png_bypassed_node_secret.png",
+      "carrier": "png:tEXt",
+      "class": "H1",
+      "location": "tEXt[workflow]:nodes[2]/widgets_values[0]/api_key",
+      "node_id": "12",
+      "bypassed": true,
+      "length": 51,
+      "sha256_prefix": "f976cc5f",
+      "severity": "high",
+      "detail": "companion of K2 (held in a bypassed or muted node)",
+      "tags": [],
+      "companion_of": "K2"
+    },
+    {
+      "file": "demo\\03_png_bypassed_node_secret.png",
+      "carrier": "png:tEXt",
+      "class": "K1",
+      "location": "tEXt[workflow]:nodes[2]/widgets_values[0]",
+      "node_id": "12",
+      "bypassed": true,
+      "length": 51,
+      "sha256_prefix": "f976cc5f",
+      "severity": "high",
+      "detail": "vendor=openai",
+      "tags": [
+        "H1"
+      ]
+    },
+    {
+      "file": "demo\\03_png_bypassed_node_secret.png",
+      "carrier": "png:tEXt",
+      "class": "H1",
+      "location": "tEXt[workflow]:nodes[2]/widgets_values[0]",
+      "node_id": "12",
+      "bypassed": true,
+      "length": 51,
+      "sha256_prefix": "f976cc5f",
+      "severity": "high",
+      "detail": "companion of K1 (held in a bypassed or muted node)",
+      "tags": [],
+      "companion_of": "K1"
+    },
+    {
+      "file": "demo\\05_mp4_prompt_tag_and_free_box.mp4",
+      "carrier": "mp4:tag",
+      "class": "P3",
+      "location": "moov/udta/meta/ilst/prompt:node:20/inputs/server",
+      "node_id": "20",
+      "bypassed": false,
+      "length": 13,
+      "sha256_prefix": "500a12a5",
+      "severity": "low",
+      "detail": "kind=private_ipv4",
+      "tags": []
+    },
+    {
+      "file": "demo\\05_mp4_prompt_tag_and_free_box.mp4",
+      "carrier": "mp4:tag",
+      "class": "P2",
+      "location": "moov/udta/meta/ilst/prompt:node:20/inputs/~ad7ee739",
+      "node_id": "20",
+      "bypassed": false,
+      "length": 23,
+      "sha256_prefix": "0d3ae817",
+      "severity": "medium",
+      "detail": "kind=email",
+      "tags": []
+    },
+    {
+      "file": "demo\\05_mp4_prompt_tag_and_free_box.mp4",
+      "carrier": "mp4:tag",
+      "class": "M1",
+      "location": "moov/udta/meta/ilst/prompt",
+      "node_id": null,
+      "bypassed": false,
+      "length": 773,
+      "sha256_prefix": "d17693aa",
+      "severity": "medium",
+      "detail": "workflow_json_in_tag;format=api;tag=prompt",
+      "tags": []
+    },
+    {
+      "file": "demo\\05_mp4_prompt_tag_and_free_box.mp4",
+      "carrier": "mp4:box:free",
+      "class": "K1",
+      "location": "free:raw",
+      "node_id": null,
+      "bypassed": false,
+      "length": 51,
+      "sha256_prefix": "18cbf43c",
+      "severity": "high",
+      "detail": "vendor=openai",
+      "tags": []
+    },
+    {
+      "file": "demo\\05_mp4_prompt_tag_and_free_box.mp4",
+      "carrier": "mp4:box:free",
+      "class": "M1",
+      "location": "free",
+      "node_id": null,
+      "bypassed": false,
+      "length": 59,
+      "sha256_prefix": "0f4e377e",
+      "severity": "medium",
+      "detail": "hidden_box;payload=text",
+      "tags": []
+    },
+    {
+      "file": "demo\\06_jpeg_exif_gps.jpg",
+      "carrier": "jpeg:exif",
+      "class": "G1",
+      "location": "exif:GPS",
+      "node_id": null,
+      "bypassed": false,
+      "length": 48,
+      "sha256_prefix": "4fb211c8",
+      "severity": "high",
+      "detail": "kind=exif_gps;tags=lat,lon",
+      "tags": []
+    }
+  ],
+  "errors": [],
+  "info": [
+    {
+      "file": "demo\\01_png_api_key_and_username.png",
+      "code": "embedded_comfyui_api_json"
+    },
+    {
+      "file": "demo\\02_png_ztxt_webhook.png",
+      "code": "embedded_comfyui_ui_json"
+    },
+    {
+      "file": "demo\\03_png_bypassed_node_secret.png",
+      "code": "embedded_comfyui_api_json"
+    },
+    {
+      "file": "demo\\03_png_bypassed_node_secret.png",
+      "code": "embedded_comfyui_ui_json"
+    },
+    {
+      "file": "demo\\04_clean.png",
+      "code": "embedded_comfyui_api_json"
+    },
+    {
+      "file": "demo\\DEMO_EXPECTED.md",
+      "code": "skipped_other"
+    }
+  ],
+  "known_misses": [
+    "Data hidden in pixel bits (steganography, LSB or otherwise).",
+    "Secrets, faces, logos or text that appear in the generated pixels themselves.",
+    "The contents of C2PA / Content Credentials manifests are not decoded or classified.",
+    "The image or video content itself (what the picture shows).",
+    "Secrets that were base64-, hex-, rot13- or otherwise re-encoded, or split across fields.",
+    "ICC profile contents, and audio/video sample data (incl. the first mdat).",
+    "Data hidden inside the compressed image stream itself (PNG IDAT, JPEG entropy-coded segments).",
+    "UTF-16 text inside raw (unparsed) regions such as trailing data; UTF-16 whole-chunk text is decoded.",
+    "Containers other than PNG, JPEG, MP4/MOV and plain JSON (WebP, GIF, WebM, HEIC, AVIF ... are reported as not scanned; in a folder, other unrecognized file types are only counted as skipped).",
+    "IPv6 addresses, loopback, link-local and CGNAT ranges, and public IPv4 addresses.",
+    "Vendor key formats other than the eight it knows (OpenAI, Anthropic, GitHub, AWS, Google, Slack, Stripe live, Hugging Face), webhook URLs other than Discord and Slack, and secrets in fields whose names it does not recognise."
+  ],
+  "note": "The 'file' fields are file-system names and untrusted text; treat them as data."
+}

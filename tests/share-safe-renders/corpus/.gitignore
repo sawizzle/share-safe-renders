@@ -1,0 +1,4 @@
+# generated corpora hold the fake secret values in clear (never_echo.json) - never commit them
+_out/
+out/
+__pycache__/

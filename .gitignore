@@ -1,0 +1,7 @@
+# test artefacts and caches (the tests regenerate their media)
+_work/
+__pycache__/
+*.pyc
+
+# maintainer-only private deny-list for the hygiene test (never commit, never publish)
+tests/share-safe-renders/_private_denylist.json
