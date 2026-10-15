@@ -153,7 +153,8 @@ class TestFrontmatter(unittest.TestCase):
 class TestStructure(unittest.TestCase):
     def test_headings_in_order(self):
         heads = re.findall(r"^## (.+)$", SKILL, re.M)
-        want = ["When to use", "Rules that always apply", "Names in commands", "Workflow", "Output format (always this order)",
+        want = ["If there is no skill folder", "When to use", "Rules that always apply", "Names in commands", "Workflow",
+                "Output format (always this order)",
                 "Exit codes: what to say", "Classes",
                 "Export commands (copy without the metadata; run on the demo files with ffmpeg 5.1, 7.1, 8.1.1 and 9.0.1 on Windows)",
                 "If Python is missing, or the path has spaces", "Files in this skill"]
@@ -207,7 +208,7 @@ class TestStructure(unittest.TestCase):
         want = ["README.md", "SKILL.md", "scripts/scan.py", "scripts/make_demo.py", "examples/sample_report.md",
                 "examples/sample_report.json", "examples/example_session.md"] + ["references/" + r for r in (
                     "what-leaks-and-where.md", "how-to-export-clean.md", "reading-the-report.md", "known-misses.md",
-                    "vs-exiftool-and-trufflehog.md")]
+                    "vs-exiftool-and-trufflehog.md", "no-skill-folder.md")]
         self.assertEqual(sorted(found), sorted(want))
 
 

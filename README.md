@@ -28,7 +28,7 @@ The first command writes six small synthetic files with invented secrets; the se
 python -I -B -m unittest discover -s tests/share-safe-renders
 ```
 
-The suite has 606 tests. Every test that cannot run on a given machine skips with a stated reason, and [tests/share-safe-renders/README.md](tests/share-safe-renders/README.md) says what skips where and on which operating systems, ffmpeg builds, Python and Pillow versions the suite was run. macOS was not tested.
+The suite has 658 tests. Every test that cannot run on a given machine skips with a stated reason, and [tests/share-safe-renders/README.md](tests/share-safe-renders/README.md) says what skips where and on which operating systems, ffmpeg builds, Python and Pillow versions the suite was run. macOS was not tested.
 
 ## Licence
 

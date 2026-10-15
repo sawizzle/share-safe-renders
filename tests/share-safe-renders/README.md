@@ -10,7 +10,7 @@ Everything is generated at run time into temporary folders. No real render, fold
 credentials are assembled from fragments, so no credential-shaped literal exists in any file here (a test checks that).
 Tests that need something that is not in `packages/` or `tests/` skip with a stated reason: `ffmpeg` and `ffprobe` on PATH,
 Pillow, PyYAML (it must be importable under `-I`: a PyYAML in the user site is hidden by it, a distribution package such as
-`python3-yaml` is not), `tools/agensi_precheck_v3.py` and the folder `listing/share-safe-renders` (19 tests skip without those two,
+`python3-yaml` is not), `tools/agensi_precheck_v3.py` and the folder `listing/share-safe-renders` (20 tests skip without those two,
 so put them next to `tests/`, as in the repository), the maintainer-only private deny-list file (3 tests; see "The private-term
 checks" below), POSIX-only or Windows-only features, Linux (1 test), and a normal user instead of root (4 tests). A run that skips for a reason that does not apply on that machine has not covered those tests;
 the section "Where the suite has been run" says where each ran.
@@ -36,6 +36,10 @@ decompression-bomb probes, instead of the reduced one.
 | `test_listing.py` | the listing text: fields, honesty, test count, release checklist, demo, and the changelog's account of the description change and of the documentation changes |
 | `test_package_hygiene.py` | no credential-shaped literal, no e-mail address or home path of a person, only the publisher handle in the repository address, text-only package, zip layout, the Agensi precheck; and the private-term checks (below): the mechanism on a synthetic list in every checkout, the real list only where the maintainer-only file exists |
 | `test_corpus_score.py`, `corpus/`, `eval/` | the scanner against the synthetic answer-key corpus, and the head-to-head harness and report |
+| `test_v101_no_skill_folder.py`, `get_skill_sim.py` | package release 1.0.1 (documentation and tests only: scan.py and make_demo.py are the files of 1.0, byte for byte, pinned by their SHA-256): `references/no-skill-folder.md` for an agent that received the skill as text with no skill folder. The file sets in its table are derived from the code (imports, files opened, use of its own path or name); each set is copied alone into an empty folder whose path has spaces and run on synthetic renders, with the installed package's report as the expected result, and leaving any file out fails. The snippet is taken out of the document verbatim and run against simulated answers built by `get_skill_sim.py` (every file byte for byte; plain fences inside markdown, a last block with no final newline, a CRLF file, an answer saved with CRLF line ends; duplicate blocks, another skill's blocks, missing names and bad names are refused; it takes no folder: any second argument other than `new` is refused, and every run makes a fresh folder of its own in the temp folder). Broken copies of the snippet must fail. The public-checkout skip figures below are measured: the four modules that read `listing/`, `tools/` or the deny-list file are run in a copy without them. One test reads `listing/` and skips without it. |
+
+`get_skill_sim.py` writes a text file shaped like an answer that returns a skill as text (`SKILL.md` inline, then one `### File: ` block per file), for any package folder:
+`python -I tests/share-safe-renders/get_skill_sim.py packages/share-safe-renders out.txt` (the output file must not be inside the package folder).
 
 ## The private-term checks
 
@@ -55,7 +59,7 @@ free text. This file holds private terms in clear text: never commit, zip or pub
 
 ## Where the suite has been run
 
-The suite has 606 tests. Each row is one run of `python -I -B -m unittest discover -s tests/share-safe-renders -v` on this tree,
+The suite has 658 tests. Each row is one run of `python -I -B -m unittest discover -s tests/share-safe-renders -v` on this tree,
 with `listing/`, `tools/` and the private deny-list file next to or inside `tests/`; every run passed (no failure, no error). Skipped tests report their reason with `-v`.
 Windows 11 is the author's machine; the Linux rows are Docker containers on it (x86-64) with each distribution's own packages.
 
@@ -75,12 +79,12 @@ Windows 11 is the author's machine; the Linux rows are Docker containers on it (
 | Ubuntu 22.04, root, no Pillow and no PyYAML | 4.4.2 | 3.10.12 | none | none | 42 |
 
 A checkout of the public repository has only `packages/` and `tests/`: no `listing/`, no `tools/` and no private deny-list file. In it the same
-runs skip 22 more tests: 17 listing tests (16 in `test_listing.py`, 1 in `test_audit_docs.py`) and 2 precheck tests because `listing/` and `tools/`
+runs skip 23 more tests: 18 listing tests (16 in `test_listing.py`, 1 in `test_audit_docs.py`, 1 in `test_v101_no_skill_folder.py`) and 2 precheck tests because `listing/` and `tools/`
 are missing, and 3 private-term tests because the deny-list file is missing. Measured in a copy of this tree with those three removed: Windows 11 with
-Python 3.14.6 and ffmpeg 8.1.1 skipped 39 (17 + 22), Ubuntu 22.04 as root 48 (26 + 22) and Ubuntu 26.04 as root 46 (24 + 22); nothing failed, and the
+Python 3.14.6 and ffmpeg 8.1.1 skipped 40 (17 + 23), Ubuntu 22.04 as root 49 (26 + 23) and Ubuntu 26.04 as root 47 (24 + 23); nothing failed, and the
 three private-term tests gave the stated reason.
 
-Taken together, each of the 606 tests ran and passed in at least one of these 15 runs, and none failed in any of them. What does
+Taken together, each of the 658 tests ran and passed in at least one of these 15 runs, and none failed in any of them. What does
 not run where:
 
 - Windows, Python 3.14.6 (17): 6 named-pipe tests, 1 undecodable-file-name test, 2 `sh` tests and 1 test of a POSIX folder whose name

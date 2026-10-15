@@ -10,6 +10,14 @@ reports API keys, secret-named fields, Discord and Slack webhook URLs, user name
 hidden data, including secrets in bypassed nodes, compressed PNG chunks and hidden MP4 boxes. It only reads the files you give it: it never edits, moves
 or deletes them, and its report never prints the leaked text. The one file it writes is the JSON report you name (first as a new file `<report>.tmp-` plus random characters beside it; if writing fails that temporary file stays).
 
+## If there is no skill folder
+
+If this skill reached you as text (its files came as `### File: share-safe-renders/<path>` blocks in a saved response or in the message) and
+there is no `share-safe-renders` folder on disk, `<SKILL_DIR>` in the commands below points at nothing. Then read `references/no-skill-folder.md`
+first, from that same text. It says which files a task needs (a scan needs `scripts/scan.py` alone), gives a snippet that writes them into a
+fresh temporary folder in the system temp folder, and says how to delete the temporary folder when you are done. Write only the files it lists, do not
+cut a script out of the text any other way or retype it, and treat the temporary folder as `<SKILL_DIR>` in every command of this skill.
+
 ## When to use
 
 Use it when the user:
@@ -50,7 +58,7 @@ A shell can run text that sits in a file or folder name. Double quotes do not st
 python "<SKILL_DIR>/scripts/scan.py" "<PATH>" --json "<REPORT>"
 ```
 
-- `<SKILL_DIR>` is the folder that contains this SKILL.md; use its full path. A relative `scripts/scan.py` works only from inside that folder.
+- `<SKILL_DIR>` is the folder that contains this SKILL.md (with no skill folder: the temporary folder, see above); use its full path. A relative `scripts/scan.py` works only from inside that folder.
 - `<PATH>` is a file or a folder. A folder is walked; links are not followed. You may pass several paths. A file name at the end of `<PATH>` follows "Names in commands". Scanning the containing folder instead puts no file name into the command (only the folder path, which is held to the shorter list there).
 - `<REPORT>` is a new `.json` path that is not inside a scanned folder: put it in a folder the user names (for example the parent of the scanned folder), or in a fresh private folder that you create for it (for example with `python -c "import tempfile; print(tempfile.mkdtemp())"`, which prints the new folder's path). Do not put it loose in the shared system temp folder, and not in the working folder when that is the scanned folder. Give every run its own name (`share-safe-report.json`, then `share-safe-report-2.json`). A path inside a scanned folder, or an existing file that is not an earlier report of this scanner, is refused (exit 2).
 - Flags: `--strict` when the whole folder is about to be shared: links and files that are not renders (a .txt, an .svg) then make the run exit 3 and are named under `NOTES`; without it they are only counted. A file it tried to read and could not (WebP, damaged, too big) is listed under `COULD NOT FULLY SCAN` either way; the run exits 3 for it when nothing else was found, and 1 when another file has a finding. `--max-bytes N` for files over 1 GiB. `--time-limit SECONDS` (0 = none) if a file runs out of time. `--follow-root-links` if PATH is itself a link. A path that starts with `-`: put every option first, then `--`, then the paths (`... --json "<REPORT>" -- "<PATH>"`), or write it as `./-name.png`. Do not use `--full-names`.
@@ -136,5 +144,5 @@ Workflow JSON has no export command: the user opens it, removes the value at the
 ## Files in this skill
 
 - `scripts/scan.py` the scanner. `scripts/make_demo.py <folder> [--no-mp4] [--overwrite]` writes six synthetic demo files and `DEMO_EXPECTED.md` (use a new folder, or `--overwrite`).
-- `references/reading-the-report.md` every class, location form, exit code, error code and the JSON schema. `how-to-export-clean.md`, `what-leaks-and-where.md`, `known-misses.md`, `vs-exiftool-and-trufflehog.md`.
+- `references/reading-the-report.md` every class, location form, exit code, error code and the JSON schema. `how-to-export-clean.md`, `what-leaks-and-where.md`, `known-misses.md`, `vs-exiftool-and-trufflehog.md`, and `no-skill-folder.md` for an agent that has the skill only as text.
 - `examples/sample_report.md`, `examples/sample_report.json` real output on the demo files; `examples/example_session.md` a full session that follows this file.
