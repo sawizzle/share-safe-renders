@@ -6,7 +6,8 @@ It only reads the files you give it and writes one JSON report to a path you nam
 
 ## Get it
 
-Copy `packages/share-safe-renders/` into your agent's skills folder (for Claude Code: `~/.claude/skills/`, or `.claude/skills/` inside one project), or run the scanner by hand without any agent.
+- Copy `packages/share-safe-renders/` into your agent's skills folder (for Claude Code: `~/.claude/skills/`, or `.claude/skills/` inside one project), or run the scanner by hand without any agent, or
+- get it from Agensi: https://agensi.io/skills/share-safe-renders
 
 Needs Python 3.9 or newer. `ffprobe` on PATH is optional (a second witness for MP4/MOV tags); `ffmpeg` is needed only for the export commands in the skill's how-to page and for the MP4 in the demo. The skill's own [README](packages/share-safe-renders/README.md) and [SKILL.md](packages/share-safe-renders/SKILL.md) have the full instructions, the tested versions and the limits.
 
@@ -32,3 +33,5 @@ The suite has 606 tests. Every test that cannot run on a given machine skips wit
 ## Licence
 
 MIT OR Apache-2.0, at your option: see `LICENSE-MIT` and `LICENSE-APACHE`. No warranty.
+
+The copy of the skill delivered through Agensi is under Agensi's buyer terms (a personal, non-transferable licence). The licence line inside `packages/share-safe-renders/README.md` describes that delivered copy, not this repository.
