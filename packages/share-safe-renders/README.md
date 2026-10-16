@@ -11,7 +11,7 @@ the scanner is a file's own name; the printed report escapes it and shortens eac
 The length is exact. The hash prefix is a keyed hash (HMAC-SHA-256 with a random key made for each run and never stored), so the same value has the same prefix everywhere in one report, but a guess cannot be checked against a prefix, and the prefixes of two reports cannot be compared. A short value such as a user name still has its length in the report: share a report only with people who may know the values.)
 The skill tells you how to export a copy without the metadata (commands that were run on the demo files are in
 `references/how-to-export-clean.md`) and how to check the copy by scanning it again. The scrubbing is done by other tools, so the check is not circular.
-An agent pastes a file name into a command only if the name is plain (ASCII letters, digits, spaces and `. _ ( ) + -`), and only if the folder you name has no `"`, `$`, backtick, `%`, `!` or typographic double quote in it: a shell can run text in a name, and typographic quotes defeat the quoting in Windows PowerShell 5.1. Any other name is not pasted; you copy or rename the file, or move it to a plain-named folder, first.
+`SKILL.md` tells the agent to paste a file name into a command only if the name is plain (ASCII letters, digits, spaces and `. _ ( ) + -`), and only if the folder you name has no `"`, `$`, backtick, `%`, `!` or typographic double quote in it: a shell can run text in a name, and typographic quotes defeat the quoting in Windows PowerShell 5.1. For any other name it tells the agent to ask you to copy or rename the file, or move it to a plain-named folder, first.
 
 ## Quick start
 
@@ -36,9 +36,9 @@ a secret in a field with an ordinary name can be missed. "Nothing found" is not 
 ## Install
 
 Copy this whole folder (`share-safe-renders`) into your agent's skills folder. For Claude Code that is `~/.claude/skills/` for every project, or `.claude/skills/` inside one project.
-Then ask in plain words, for example "check these renders before I post them". `SKILL.md` is the file the agent reads. If your agent does not pick the skill up on its own, say: use the share-safe-renders skill.
-If your agent received the skill as text and nothing was installed, there is no folder to copy: `SKILL.md` sends it to `references/no-skill-folder.md`, whose snippet writes
-the one file a scan needs (`scripts/scan.py`) into a fresh folder in the system temp folder; the agent runs it from there and deletes that folder afterwards.
+Then ask in plain words, for example "check these renders before I post them". `SKILL.md` holds the instructions for the agent. If your agent does not pick the skill up on its own, say: use the share-safe-renders skill.
+If your agent received the skill as text and nothing was installed, there is no folder to copy: `SKILL.md` sends it to `references/no-skill-folder.md`. That note tells the agent to load
+the one file a scan needs (`scripts/scan.py`), and gives a short program that writes it into a fresh folder in the system temp folder only when its SHA-256 is the published one (for a file shown in the conversation, the note tells the agent to write a scratch file of its own first and to delete it afterwards, and allows writing the file straight into that folder and checking it); it tells the agent to run the `scan.py` in that folder from a folder it trusts, as `SKILL.md` says, and to delete that folder afterwards.
 
 You can also run the scanner by hand, without any agent.
 
@@ -48,7 +48,7 @@ You can also run the scanner by hand, without any agent.
 - `ffprobe` in a PATH directory is optional: when present the scanner uses it as a second witness for MP4/MOV tags.
 - `ffmpeg` is needed only for the export commands in `references/how-to-export-clean.md`, and for the MP4 in the demo.
 
-Tested: the scripts and the test suite (658 tests) were run on Windows 11 with Python 3.14.6 and ffmpeg and ffprobe 8.1.1, and also with ffmpeg 5.1, 7.1 (its ffprobe is 8.1.1) and 9.0.1, and with Python 3.9.25, 3.10.21, 3.11.15, 3.12.11 and 3.13.13 (ffmpeg 8.1.1). They were also run on Linux x86-64 in Docker containers, as root, with each distribution's own ffmpeg and Python: Ubuntu 22.04 (ffmpeg 4.4.2, Python 3.10.12), Debian 12 (5.1.9, 3.11.2), Ubuntu 24.04 (6.1.1, 3.12.3) and Ubuntu 26.04 (8.0.1, 3.14.4), and once more on Ubuntu 24.04 as a normal user. Every one of these runs passed. A test skips, with a stated reason, where it cannot apply (for example it needs Windows, POSIX, a normal user instead of root, or Pillow): 17 of the 658 skipped on Windows with Python 3.14.6 and 20 to 26 on Linux (with Pillow and PyYAML installed), and each of the 658 ran in at least one of these environments. Those figures are for the author's tree, which also holds a `listing/` folder, a `tools/` folder and one maintainer-only file; the public repository has none of the three, and a checkout of it skips 23 more tests (measured on Windows with Python 3.14.6, on Ubuntu 22.04 and on Ubuntu 26.04; `tests/share-safe-renders/README.md` says which). The export methods behave differently on some builds (`references/how-to-export-clean.md` has the per-build table and says which builds each statement was measured on). Not tested: macOS, other Linux distributions and CPU architectures, other Python versions, other ffmpeg versions, and any agent end to end: the scripts were run directly, and `examples/example_session.md` is
+Tested: the scripts and the test suite (692 tests) were run on Windows 11 with Python 3.14.6 and ffmpeg and ffprobe 8.1.1, and also with ffmpeg 5.1, 7.1 (its ffprobe is 8.1.1) and 9.0.1, and with Python 3.9.25, 3.10.21, 3.11.15, 3.12.11 and 3.13.13 (ffmpeg 8.1.1). They were also run on Linux x86-64 in Docker containers, as root, with each distribution's own ffmpeg and Python: Ubuntu 22.04 (ffmpeg 4.4.2, Python 3.10.12), Debian 12 (5.1.9, 3.11.2), Ubuntu 24.04 (6.1.1, 3.12.3) and Ubuntu 26.04 (8.0.1, 3.14.4), and once more on Ubuntu 24.04 as a normal user. Every one of these runs passed. A test skips, with a stated reason, where it cannot apply (for example it needs Windows, POSIX, a normal user instead of root, or Pillow): 24 of the 692 skipped on Windows with Python 3.14.6 and 25 to 30 on Linux (with Pillow and PyYAML installed), and each of the 692 ran in at least one of these environments (the 2 that read real saved answers in a run that named them). Those figures are for the author's tree, which also holds a `listing/` folder, a `tools/` folder and one maintainer-only file; the public repository has none of the three, and a checkout of it skips 23 more tests (measured on Windows with Python 3.14.6, on Ubuntu 22.04 and on Ubuntu 26.04; `tests/share-safe-renders/README.md` says which). The export methods behave differently on some builds (`references/how-to-export-clean.md` has the per-build table and says which builds each statement was measured on). Not tested: macOS, other Linux distributions and CPU architectures, other Python versions, other ffmpeg versions, and any agent end to end: the scripts were run directly, and `examples/example_session.md` is
 a worked example, not a recording of a model.
 
 ## Try it
@@ -56,9 +56,9 @@ a worked example, not a recording of a model.
 Do not run these inside the skill folder. Make or pick a folder you can write to (a fresh temporary folder is fine), written `<WORK>` below, and use the full path of the skill folder for `<SKILL_DIR>`. The commands write `demo/`, `demo_report.json` and, for the last step, `demo_copy.mp4` into `<WORK>` and nowhere else. `make_demo.py` refuses to overwrite existing demo files (exit 2): to run it again use a new folder, or add `--overwrite`.
 
 ```sh
-python "<SKILL_DIR>/scripts/make_demo.py" "<WORK>/demo"
-python "<SKILL_DIR>/scripts/scan.py" "<WORK>/demo" --json "<WORK>/demo_report.json"
-python "<SKILL_DIR>/scripts/scan.py" "<WORK>/demo/04_clean.png"
+python -I -B "<SKILL_DIR>/scripts/make_demo.py" "<WORK>/demo"
+python -I -B "<SKILL_DIR>/scripts/scan.py" "<WORK>/demo" --json "<WORK>/demo_report.json"
+python -I -B "<SKILL_DIR>/scripts/scan.py" "<WORK>/demo/04_clean.png"
 ```
 
 1. The first command writes six small synthetic files into `demo/` (a fake key and a user-name path in a PNG, a fake webhook in a compressed PNG chunk, a fake key in a bypassed node, a PNG with only an ordinary prompt, an MP4 with a prompt tag and a hidden box, a JPEG with GPS) and `DEMO_EXPECTED.md`, which lists what the scanner should report for each. Every secret is invented and assembled when the script runs.
@@ -69,12 +69,12 @@ To see the whole loop, make a copy of the MP4 without its metadata and scan the 
 
 ```sh
 ffmpeg -loglevel error -n -i "<WORK>/demo/05_mp4_prompt_tag_and_free_box.mp4" -map_metadata -1 -map_chapters -1 -c copy "<WORK>/demo_copy.mp4"
-python "<SKILL_DIR>/scripts/scan.py" "<WORK>/demo_copy.mp4"
+python -I -B "<SKILL_DIR>/scripts/scan.py" "<WORK>/demo_copy.mp4"
 ```
 
 The second line exits with 0: nothing found in the copy. `examples/sample_report.md` and `examples/sample_report.json` are the real output of the scan above.
 
-On Windows, `py -3` works in place of `python` if `python` is not found. On macOS and Linux use `python3`.
+On Windows, `py -3` works in place of `python` if `python` is not found. Run the commands in PowerShell or bash, or in cmd only after `set NoDefaultCurrentDirectoryInExePath=1`: cmd starts a `python.bat` or `ffmpeg.bat` that sits in the working folder before the real program ("Where to run them" in `SKILL.md`). On macOS and Linux use `python3`.
 
 ## How it compares
 
@@ -87,7 +87,7 @@ The numbers, the exact setup and every caveat are in `references/vs-exiftool-and
 
 | Path | Contents |
 | --- | --- |
-| `SKILL.md` | The instructions the agent follows: workflow, output format, exit codes, limits. |
+| `SKILL.md` | The instructions for the agent: workflow, output format, exit codes, limits. |
 | `scripts/scan.py` | The scanner (one file, standard library only). |
 | `scripts/make_demo.py` | Writes the six synthetic demo files and `DEMO_EXPECTED.md` into a folder you name (`DEMO_EXPECTED.md` is created by this script: it is not in the zip). |
 | `references/reading-the-report.md` | Every class, location form, exit code, error code, and the JSON schema. |
@@ -95,7 +95,7 @@ The numbers, the exact setup and every caveat are in `references/vs-exiftool-and
 | `references/what-leaks-and-where.md` | Which containers carry what, in ComfyUI-style PNG and MP4 and in camera JPEG. |
 | `references/known-misses.md` | What the scanner does not find. |
 | `references/vs-exiftool-and-trufflehog.md` | The comparison, with numbers and caveats. |
-| `references/no-skill-folder.md` | For an agent that received the skill as text with no folder: the files each task needs, a snippet that writes them to a temporary folder, and how to delete it. |
+| `references/no-skill-folder.md` | For an agent that received the skill as text with no folder: the files each task needs, a short program that writes them into a fresh temporary folder only after checking each file's SHA-256, and how to delete that folder. |
 | `examples/` | A real sample report (`.md` and `.json`) and a worked example session. |
 
 ## Permissions
@@ -103,7 +103,7 @@ The numbers, the exact setup and every caveat are in `references/vs-exiftool-and
 The scripts read the files and folders you name, and nothing else. They write only the JSON report path you give `scan.py` (plus a temporary file beside it while writing, `<report>.tmp-` and random characters, made so that it can never be an existing file or a link; it is not deleted if writing fails) and the folder you give `make_demo.py`. They read no
 environment variable of their own (they do ask the operating system for random numbers: the key of the hash prefix and the name of the temporary file), open no network connection, delete nothing, and start no program except `ffprobe` (optional, `scan.py`) and `ffmpeg` (only to build the demo MP4, `make_demo.py`, skipped
 with `--no-mp4`), always with an argument list and never through a shell. To find those two programs they read your PATH and look only in the absolute directories listed on it, never in the current folder (on Windows only `ffprobe.exe` and `ffmpeg.exe` count). `scan.py` refuses to replace an existing file given to `--json` unless it is empty or an earlier report of its own, and refuses a report path inside a folder it is scanning.
-If your agent has the skill only as text, the agent itself (not the scripts) reads the saved response file, writes the scripts a task needs (`scripts/scan.py` for a scan) into a temporary folder and deletes that folder afterwards (`references/no-skill-folder.md`).
+If your agent has the skill only as text, `references/no-skill-folder.md` tells the agent itself (not the scripts) to load the scripts a task needs (`scripts/scan.py` for a scan), to write them with a short checking program into a fresh folder that the program makes in the system temp folder (for a file shown in the conversation, the note tells the agent to write a scratch file of its own first and to delete it afterwards, and allows writing the file straight into that folder and checking it), and to delete that folder afterwards.
 
 ## Source and tests
 

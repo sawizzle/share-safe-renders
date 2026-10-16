@@ -17,8 +17,8 @@ import doc_commands as DC
 SKILL = read_text(os.path.join(PKG, "SKILL.md"))
 CMDS = DC.extract("SKILL.md", SKILL)
 FFMPEG = {re.search(r"<IN\.(\w+)>", c.text).group(1): c for c in CMDS if c.text.startswith("ffmpeg ")}
-WIN_FORM = [c for c in CMDS if c.text.startswith('py -3 "<SKILL_DIR>')][0]
-POSIX_FORM = [c for c in CMDS if c.text.startswith('python3 "<SKILL_DIR>')][0]
+WIN_FORM = [c for c in CMDS if c.text.startswith('py -3 -I -B "<SKILL_DIR>')][0]
+POSIX_FORM = [c for c in CMDS if c.text.startswith('python3 -I -B "<SKILL_DIR>')][0]
 
 
 class Spaced(object):
@@ -80,9 +80,12 @@ class TestWindowsShells(unittest.TestCase):
         return p.returncode, p.stdout.decode("utf-8", "replace")
 
     def run_cmd(self, text):
-        # one command-line string: cmd /c "<the doc's command>" (cmd strips the outer pair of quotes and keeps the inner ones)
-        p = subprocess.run('cmd /c "' + text + '"', stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                           timeout=300)
+        # one command-line string: cmd /c "<the set command SKILL.md gives for cmd>& <the doc's command>" (cmd strips the outer
+        # pair of quotes and keeps the inner ones); "Where to run them" in SKILL.md allows cmd only after that set command
+        guard = re.search(r"first run `(set [^`]+)` in the same cmd session", " ".join(SKILL.split()))
+        self.assertIsNotNone(guard, "SKILL.md no longer gives the set command for cmd")
+        p = subprocess.run('cmd /d /c "' + guard.group(1) + '& ' + text + '"', stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                           stderr=subprocess.STDOUT, timeout=300)
         return p.returncode, p.stdout.decode("utf-8", "replace")
 
     def test_documented_command_in_powershell_and_cmd_with_spaces_in_every_path(self):
@@ -200,8 +203,8 @@ class TestTheDocumentedFormsExist(unittest.TestCase):
             self.assertRegex(c.text, r'^ffmpeg -loglevel error -n -i "<IN\.%s>" .* "<OUT\.%s>"$' % (ext, ext))
 
     def test_both_forms_are_in_skill_md(self):
-        self.assertRegex(WIN_FORM.text, r'^py -3 "<SKILL_DIR>\\scripts\\scan\.py" "<PATH>" --json "<REPORT>"$')
-        self.assertRegex(POSIX_FORM.text, r'^python3 "<SKILL_DIR>/scripts/scan\.py" "<PATH>" --json "<REPORT>"$')
+        self.assertRegex(WIN_FORM.text, r'^py -3 -I -B "<SKILL_DIR>\\scripts\\scan\.py" "<PATH>" --json "<REPORT>"$')
+        self.assertRegex(POSIX_FORM.text, r'^python3 -I -B "<SKILL_DIR>/scripts/scan\.py" "<PATH>" --json "<REPORT>"$')
 
 
 if __name__ == "__main__":

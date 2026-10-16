@@ -155,8 +155,11 @@ class TestEveryCommandQuotesEveryPath(unittest.TestCase):
     """SKILL.md says: always put double quotes around every path. The templates used to be unquoted."""
 
     def lines(self, text, start):
-        return [ln.strip() for block in re.findall(r"```(?:sh|bash|text)?\n(.*?)```", text, re.S) for ln in block.splitlines()
-                if ln.strip().startswith(start)]
+        """Command lines of the fenced blocks that start with `start`, read after a leading `cd ~; ` (the example session
+        starts every command in the home folder, as "Where to run them" in SKILL.md says)."""
+        lines = [ln.strip() for block in re.findall(r"```(?:sh|bash|text)?\n(.*?)```", text, re.S) for ln in block.splitlines()]
+        lines = [ln[len("cd ~; "):] if ln.startswith("cd ~; ") else ln for ln in lines]
+        return [ln for ln in lines if ln.startswith(start)]
 
     def test_ffmpeg_lines_quote_the_input_and_the_output_and_hide_the_tags(self):
         seen = 0

@@ -86,9 +86,9 @@ class TestReadmeTryIt(unittest.TestCase):
     def test_the_commands_in_order(self):
         ws = self.ws
         texts = [c.text for c in self.cmds]
-        self.assertEqual(texts[:3], ['python "<SKILL_DIR>/scripts/make_demo.py" "<WORK>/demo"',
-                                     'python "<SKILL_DIR>/scripts/scan.py" "<WORK>/demo" --json "<WORK>/demo_report.json"',
-                                     'python "<SKILL_DIR>/scripts/scan.py" "<WORK>/demo/04_clean.png"'])
+        self.assertEqual(texts[:3], ['python -I -B "<SKILL_DIR>/scripts/make_demo.py" "<WORK>/demo"',
+                                     'python -I -B "<SKILL_DIR>/scripts/scan.py" "<WORK>/demo" --json "<WORK>/demo_report.json"',
+                                     'python -I -B "<SKILL_DIR>/scripts/scan.py" "<WORK>/demo/04_clean.png"'])
         want = {texts[0]: 0, texts[1]: 1, texts[2]: 0}
         before = sorted(os.listdir(ws.skill_dir)), sorted(os.listdir(os.path.join(ws.skill_dir, "scripts")))
         self.assertNotEqual(os.path.normcase(ws.try_it), os.path.normcase(ws.skill_dir))
@@ -166,12 +166,17 @@ class TestSkillCommands(unittest.TestCase):
             if kind == "scan":
                 self.assertIn(code, (0, 1), "%s\n%s" % (c.text, out))
                 self.assertEqual(out.splitlines()[-1].split("(exit ")[-1].rstrip(")"), str(code))
-                script = os.path.normpath(real[1])
+                self.assertEqual(real[1:3], ["-I", "-B"], "the documented scan command runs Python isolated, without bytecode")
+                script = os.path.normpath(real[3])
                 self.assertTrue(os.path.isabs(script))
                 self.assertEqual(os.path.dirname(script), os.path.normpath(os.path.join(ws.skill_dir, "scripts")))
                 self.assertNotEqual(os.path.normpath(ws.work), os.path.normpath(ws.skill_dir))
             else:
                 self.assertEqual(code, 0, "%s\n%s" % (c.text, out))
+                if "tempfile.mkdtemp()" in c.text:          # the report-folder helper prints the empty folder it made in the
+                    made = out.strip()                      # system temp folder: remove it, so a run leaves nothing there
+                    self.assertTrue(os.path.isabs(made) and os.path.isdir(made), out)
+                    os.rmdir(made)
         self.assertGreaterEqual(ran, 5)
 
     def test_the_relative_form_only_works_inside_the_skill_folder(self):

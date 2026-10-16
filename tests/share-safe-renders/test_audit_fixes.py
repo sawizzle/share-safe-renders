@@ -237,7 +237,10 @@ class TestProgramsAreFoundOnPathOnly(ScanCase):
         code, stdout and stderr; stderr stays apart from stdout, so a report line is read from stdout alone."""
         env = dict(os.environ)
         env.pop("PATH", None)
-        env.pop("NoDefaultCurrentDirectoryInExePath", None)
+        # the Windows default: the variable is not set. A copy of os.environ has upper-case keys on Windows, so a pop of the
+        # mixed-case name removed nothing on a host that sets the variable for its shells (found while fixing 1.0.2's B3)
+        for key in [k for k in env if k.upper() in ("PATH", "NODEFAULTCURRENTDIRECTORYINEXEPATH")]:
+            del env[key]
         if path_value is not None:
             env["PATH"] = path_value
         p = subprocess.run([sys.executable, "-I", "-B", script] + list(args), cwd=work, env=env, stdout=subprocess.PIPE,

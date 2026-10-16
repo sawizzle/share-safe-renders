@@ -497,7 +497,7 @@ def main():
     root_fwd = fwd(root)
     scanner = os.path.abspath(a.scanner)
     label = a.label or os.path.basename(scanner)
-    out_dir = os.path.abspath(a.out) if a.out else os.path.join(tempfile.gettempdir(), "ssr_score_" + label)
+    out_dir = os.path.abspath(a.out) if a.out else os.path.join(tempfile.gettempdir(), "ssrtest_score_" + label)
     runs_dir = os.path.join(out_dir, "runs")
     os.makedirs(runs_dir, exist_ok=True)
     phases = set(x.strip() for x in a.phases.split(","))
@@ -1030,7 +1030,7 @@ time.sleep(600)
 
 def selftest(a):
     root = os.path.abspath(a.corpus)
-    tmp = tempfile.mkdtemp(prefix="ssr_selftest_")
+    tmp = tempfile.mkdtemp(prefix="ssrtest_selftest_")
     only = ",".join(["pos/K1_openai_legacy_api_tEXt.png", "hostile/hostile_inject_tEXt_comment.png",
                      "clean/clean_no_metadata.png"])
     fails = 0

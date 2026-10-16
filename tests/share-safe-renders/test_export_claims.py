@@ -37,6 +37,9 @@ WEBP = re.search(r"```text\n(ffmpeg [^\n]*<IN\.webp>[^\n]*)\n```", DOC).group(1)
 # does not list it checks only what must hold on every version: the documented command leaves nothing the scanner knows.
 # ----------------------------------------------------------------------------------------------------------------------
 PLAIN_SAVE = "import sys; from PIL import Image; Image.open(sys.argv[1]).save(sys.argv[2])"      # the command the doc gave before: no empty values
+# Since the audit of 1.0.2 the documented code first takes the working folder off Python's search path (a PIL package or a module
+# named like part of Python, planted in the working folder, ran through the command before), then imports Pillow.
+SEARCH_PATH_STATEMENT = "sys.path = [p for p in sys.path if p]; "
 
 
 def pillow_table(head):
@@ -118,9 +121,10 @@ ROW_STILL_WEBP_PILLOW = ("| WebP (still) | ffmpeg to JPEG with `-map_metadata -1
 ROW_ANIMATED_WEBP_GIF_PILLOW = ("| Animated WebP, GIF | the Pillow command below, to PNG | verified **not to work**, all 23 Pillow versions | "
                                 "exit 0 on a synthetic 5-frame WebP and a synthetic 5-frame GIF, but the PNG has only the first frame (silent loss). "
                                 "Export from the application that made it. |")
-PILLOW_MEASURED_LINES = {   # the two lines of the doc, character for character, as they were run on the 23 releases
-    "png": 'python -c "import sys; from PIL import Image; Image.open(sys.argv[1]).save(sys.argv[2], exif=bytes(), comment=bytes(), xmp=bytes())" "<IN.png>" "<OUT.png>"',
-    "jpg": 'python -c "import sys; from PIL import Image; Image.open(sys.argv[1]).save(sys.argv[2], exif=bytes(), comment=bytes(), xmp=bytes())" "<IN.jpg>" "<OUT.jpg>"',
+PILLOW_MEASURED_LINES = {   # the two lines of the doc, character for character, as they were run on the 23 releases (measured again on
+    # 2026-10-15 after the search-path statement was added: the same 159 combinations of Python and Pillow, every cell the same)
+    "png": 'python -c "import sys; sys.path = [p for p in sys.path if p]; from PIL import Image; Image.open(sys.argv[1]).save(sys.argv[2], exif=bytes(), comment=bytes(), xmp=bytes())" "<IN.png>" "<OUT.png>"',
+    "jpg": 'python -c "import sys; sys.path = [p for p in sys.path if p]; from PIL import Image; Image.open(sys.argv[1]).save(sys.argv[2], exif=bytes(), comment=bytes(), xmp=bytes())" "<IN.jpg>" "<OUT.jpg>"',
 }
 
 
@@ -650,11 +654,13 @@ class TestPillowTableInTheDoc(unittest.TestCase):
         self.assertEqual(sorted(PILLOW), ["jpg", "png"])
         code = {ext: cmd.text.split('" "<IN')[0].split('-c "', 1)[1] for ext, cmd in PILLOW.items()}      # the Python code between the quotes
         self.assertEqual(code["png"], code["jpg"])
-        self.assertTrue(code["png"].startswith(PLAIN_SAVE[:-1] + ", "), "the doc's code is the plain save with arguments added")
+        guarded = PLAIN_SAVE.replace("import sys; ", "import sys; " + SEARCH_PATH_STATEMENT, 1)
+        self.assertNotEqual(guarded, PLAIN_SAVE)
+        self.assertTrue(code["png"].startswith(guarded[:-1] + ", "), "the doc's code is the plain save with arguments added, after the search-path statement")
         for needle in ("exif=bytes()", "comment=bytes()", "xmp=bytes()"):
             self.assertIn(needle, code["png"])
         self.assertNotEqual(code["png"], PLAIN_SAVE, "the doc must not go back to the plain save")
-        self.assertEqual(code["png"], PLAIN_SAVE[:-1] + ", exif=bytes(), comment=bytes(), xmp=bytes())")      # and nothing from the source is passed back in
+        self.assertEqual(code["png"], guarded[:-1] + ", exif=bytes(), comment=bytes(), xmp=bytes())")      # and nothing from the source is passed back in
         # the two lines as printed, quotes and placeholders included, are the lines the tables of Pillow versions were measured with
         self.assertEqual({ext: cmd.text for ext, cmd in PILLOW.items()}, PILLOW_MEASURED_LINES)
 
@@ -671,9 +677,16 @@ class TestPillowTableInTheDoc(unittest.TestCase):
         for needle in ("Every cell of both tables was measured for each of the 23, from PyPI wheels, on Linux x86-64 with Python 3.10.12 and on Windows with Python 3.10.21.",
                        "On Linux the two printed lines of the command were run by `bash -c`, with `python` standing for that interpreter; "
                        "on Windows each line was split into arguments and run without a shell.",
+                       "Every cell of both tables was measured again on 2026-10-15, after the search-path statement was added to the command, "
+                       "in the same 159 combinations of Python and Pillow (the four distribution packages included), with the same results.",
+                       "The distribution packages python3-pil 9.0.1 (Ubuntu 22.04), 9.4.0 (Debian 12), 10.2.0 (Ubuntu 24.04) and 12.1.1 (Ubuntu 26.04)",
                        "on Linux Python 3.11.2 (19 of the versions), 3.12.3 (15) and 3.14.4 (6), on Windows 3.9.25 (18), 3.11.15 (19), 3.12.11 (16), 3.13.13 (10) and 3.14.6 (6)",
                        "A plain `save` of an animated PNG writes only the first frame and still exits 0, and so does the command above: do not use either on animated files."):
             self.assertIn(needle, flat)
+        # 159 = the 23 versions on Linux 3.10.12 and on Windows 3.10.21, the other Pythons' counts and the 4 distribution packages
+        others = re.search(r"on Linux Python 3\.11\.2 \((\d+) of the versions\), 3\.12\.3 \((\d+)\) and 3\.14\.4 \((\d+)\), on Windows 3\.9\.25 "
+                           r"\((\d+)\), 3\.11\.15 \((\d+)\), 3\.12\.11 \((\d+)\), 3\.13\.13 \((\d+)\) and 3\.14\.6 \((\d+)\)", flat)
+        self.assertEqual(2 * len(PILLOW_RELEASES) + sum(int(n) for n in others.groups()) + 4, 159)
 
 
 @unittest.skipUnless(have_ffmpeg() and DC.pillow_available(), "needs ffmpeg and Pillow")

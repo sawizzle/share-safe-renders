@@ -90,7 +90,7 @@ class Workspace(object):
     """A temporary folder with a copy of the package, a demo folder, and an out/ folder for new files."""
 
     def __init__(self):
-        self._td = tempfile.TemporaryDirectory(prefix="ssr_docs_")
+        self._td = tempfile.TemporaryDirectory(prefix="ssrtest_docs_")
         self.root = self._td.name
         self.skill_dir = os.path.join(self.root, "skill", "share-safe-renders")
         shutil.copytree(PKG, self.skill_dir, ignore=shutil.ignore_patterns("__pycache__"))

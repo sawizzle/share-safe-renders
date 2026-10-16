@@ -188,9 +188,9 @@ class TestNamesInCommands(unittest.TestCase):
         self.assertIn("Single quotes do not make such a name safe", ref)
         self.assertIn("The folder above the file name is held to a shorter list", ref)
         self.assertNotIn("single quotes (", " ".join(SKILL.split("## If Python is missing")[1].split("## Files in this skill")[0].split()))
-        self.assertIn("An agent pastes a file name into a command only if the name is plain", " ".join(README.split()))
+        self.assertIn("`SKILL.md` tells the agent to paste a file name into a command only if the name is plain", " ".join(README.split()))
         if HAVE_LISTING:
-            self.assertIn("the agent pastes a file name into a command only if the name is plain", " ".join(FIELDS.split()))
+            self.assertIn("the skill tells the agent to paste a file name into a command only if the name is plain", " ".join(FIELDS.split()))
 
     def test_every_documented_command_template_is_covered_by_the_rule(self):
         # the rule is stated for "every command in this skill and its references", and the places that hold templates point to it
@@ -254,7 +254,7 @@ class TestNamesInCommands(unittest.TestCase):
 
     @unittest.skipUnless(powershell_available(), "needs Windows PowerShell 5.1 (powershell.exe)")
     def test_windows_powershell_runs_a_name_through_the_old_procedure_and_the_new_one_refuses_it(self):
-        with tempfile.TemporaryDirectory(prefix="ssr_ps_") as td:
+        with tempfile.TemporaryDirectory(prefix="ssrtest_ps_") as td:
             code, out = run_ps("$PSVersionTable.PSVersion.ToString()", td)
             self.assertEqual(code, 0, out)
             major = int(out.strip().split(".")[0])
@@ -284,7 +284,7 @@ class TestNamesInCommands(unittest.TestCase):
     @unittest.skipUnless(powershell_available(), "needs Windows PowerShell 5.1 (powershell.exe)")
     def test_windows_powershell_runs_a_hostile_folder_when_it_is_given_as_is_and_the_new_procedure_refuses_it(self):
         # review finding: the folder part was exempt; a downloaded folder can be named like this, and the file name in it is plain
-        with tempfile.TemporaryDirectory(prefix="ssr_ps_") as td:
+        with tempfile.TemporaryDirectory(prefix="ssrtest_ps_") as td:
             hostile = {"MARKER_FA": "C:\\client\u201c (ni MARKER_FA) \u201cdrop",           # no dollar sign: the old rule used double quotes "as given"
                        "MARKER_FB": "C:\\client\u201d (ni MARKER_FB) \u201ddrop",
                        "MARKER_FC": "C:\\client\u201e (ni MARKER_FC) \u201edrop",
@@ -297,7 +297,7 @@ class TestNamesInCommands(unittest.TestCase):
 
     @unittest.skipUnless(powershell_available(), "needs Windows PowerShell 5.1 (powershell.exe)")
     def test_with_the_new_procedure_nothing_runs_and_plain_and_harmless_names_still_work(self):
-        with tempfile.TemporaryDirectory(prefix="ssr_ps_") as td:
+        with tempfile.TemporaryDirectory(prefix="ssrtest_ps_") as td:
             name = "render\u2019$(ni MARKER_NEW)\u2018.png"
             cmd = build_command(TEMPLATE, **{"IN.png": name, "OUT.png": "out.png"})
             self.assertIsNone(cmd)                           # no command is built, so none is run
@@ -322,7 +322,7 @@ class TestNamesInCommands(unittest.TestCase):
         # SKILL.md used to say that double quotes do not stop a backtick from running in PowerShell and sh. In sh that is true
         # (test_shell_quoting runs it); in PowerShell the backtick is the escape character, it changes the text and runs nothing.
         # The rule that keeps the backtick out of file names stays right either way.
-        with tempfile.TemporaryDirectory(prefix="ssr_ps_") as td:
+        with tempfile.TemporaryDirectory(prefix="ssrtest_ps_") as td:
             code, out = run_ps('$d = "a$(New-Item -ItemType File MARKER_DS | Out-Null).png"; '
                                '$a = "a`New-Item -ItemType File MARKER_BT1`.png"; $b = "a`ni MARKER_BT2`.png"; "done"', td)
             self.assertEqual(code, 0, out)
@@ -338,7 +338,7 @@ class TestNamesInCommands(unittest.TestCase):
 
     @unittest.skipUnless(powershell_available(), "needs Windows PowerShell 5.1 (powershell.exe)")
     def test_inside_double_quotes_only_four_characters_end_the_string_in_powershell_5_1_and_all_are_on_the_folder_list(self):
-        with tempfile.TemporaryDirectory(prefix="ssr_ps_") as td:
+        with tempfile.TemporaryDirectory(prefix="ssrtest_ps_") as td:
             code, out = run_ps(PS_SWEEP, td)
             self.assertEqual(code, 0, out)
             line = [ln for ln in out.splitlines() if re.fullmatch(r"[0-9A-F]{4}( [0-9A-F]{4})*", ln.strip())]
@@ -360,7 +360,7 @@ class TestNamesInCommands(unittest.TestCase):
 
     @unittest.skipUnless(shutil.which("sh"), "needs sh (on Windows, the one that comes with Git for Windows)")
     def test_sh_runs_a_dollar_name_in_double_quotes_and_the_procedure_refuses_it(self):
-        with tempfile.TemporaryDirectory(prefix="ssr_sh_") as td:
+        with tempfile.TemporaryDirectory(prefix="ssrtest_sh_") as td:
             for part, flag in (("file", "FLAG_F"), ("folder", "FLAG_D")):
                 name = "a$(touch %s).png" % flag
                 subprocess.run(["sh", "-c", 'echo "/x/%s"' % name], cwd=td, stdout=subprocess.PIPE, timeout=60)
@@ -456,7 +456,7 @@ class TestMakeDemoQuoting(unittest.TestCase):
         self.assertEqual(out, "")
 
     def test_the_next_line_prints_a_command_only_for_a_pasteable_folder(self):
-        with tempfile.TemporaryDirectory(prefix="ssr_md_") as td:
+        with tempfile.TemporaryDirectory(prefix="ssrtest_md_") as td:
             script_dir = os.path.join(td, "plain scripts")                 # a copy in a folder with a plain name: the line names scan.py there
             os.makedirs(script_dir)
             shutil.copyfile(MAKE_DEMO, os.path.join(script_dir, "make_demo.py"))
@@ -478,7 +478,7 @@ class TestMakeDemoQuoting(unittest.TestCase):
     @unittest.skipIf(os.name == "nt", "on Windows a backslash separates folders, so no folder name holds one")
     def test_the_next_line_prints_no_command_for_a_posix_folder_with_a_backslash(self):
         """On POSIX a folder may really be named C:\\work\\demo (one name, three backslashes): sh would read them as escapes, so no command."""
-        with tempfile.TemporaryDirectory(prefix="ssr_md_") as td:
+        with tempfile.TemporaryDirectory(prefix="ssrtest_md_") as td:
             script_dir = os.path.join(td, "plain scripts")
             os.makedirs(script_dir)
             shutil.copyfile(MAKE_DEMO, os.path.join(script_dir, "make_demo.py"))
@@ -1238,7 +1238,7 @@ class TestSameDir(ScanCase):
 @unittest.skipUnless(os.name == "nt", "the extended-length and share spellings are Windows spellings")
 class TestReportGuardSeesThroughOtherSpellings(unittest.TestCase):
     def setUp(self):
-        self._td = tempfile.TemporaryDirectory(prefix="ssr_guard_")
+        self._td = tempfile.TemporaryDirectory(prefix="ssrtest_guard_")
         self.addCleanup(self._td.cleanup)
         self.scanned = os.path.join(self._td.name, "scanme")
         os.makedirs(self.scanned)
@@ -1284,7 +1284,7 @@ class TestFindProgramSeesThroughOtherSpellingsOfTheCurrentFolder(unittest.TestCa
     CODE = "import sys; sys.path.insert(0, sys.argv[1]); import scan, os; print(scan.find_program('ffprobe'))"
 
     def setUp(self):
-        self._td = tempfile.TemporaryDirectory(prefix="ssr_fp_")
+        self._td = tempfile.TemporaryDirectory(prefix="ssrtest_fp_")
         self.addCleanup(self._td.cleanup)
         self.cwd = os.path.realpath(self._td.name)
         with open(os.path.join(self.cwd, "ffprobe.exe"), "wb"):

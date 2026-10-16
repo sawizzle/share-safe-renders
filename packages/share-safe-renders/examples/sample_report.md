@@ -5,8 +5,8 @@ Real output of `scripts/scan.py` 1.2.0 on the six demo files that `scripts/make_
 Commands, run from a folder you can write to that is not the skill folder (`<SKILL_DIR>` is the skill folder; the names `demo` and `demo_report.json` are written into the folder you run them in):
 
 ```sh
-python "<SKILL_DIR>/scripts/make_demo.py" demo
-python "<SKILL_DIR>/scripts/scan.py" demo --json demo_report.json
+python -I -B "<SKILL_DIR>/scripts/make_demo.py" demo
+python -I -B "<SKILL_DIR>/scripts/scan.py" demo --json demo_report.json
 ```
 
 ### 1. The demo folder (exit 1)
@@ -59,7 +59,7 @@ How to read it: each `[HIGH]`, `[MEDIUM]` or `[LOW]` line is one finding. `K1+H1
 ### 2. The one PNG with only an ordinary prompt, scanned alone (exit 0)
 
 ```sh
-python "<SKILL_DIR>/scripts/scan.py" demo/04_clean.png
+python -I -B "<SKILL_DIR>/scripts/scan.py" demo/04_clean.png
 ```
 
 ```
@@ -90,7 +90,7 @@ RESULT: NOTHING FOUND in what was scanned (this is not proof of safety; see know
 
 ```sh
 ffmpeg -loglevel error -n -i "demo/05_mp4_prompt_tag_and_free_box.mp4" -map_metadata -1 -map_chapters -1 -c copy "demo_copy.mp4"
-python "<SKILL_DIR>/scripts/scan.py" demo_copy.mp4
+python -I -B "<SKILL_DIR>/scripts/scan.py" demo_copy.mp4
 ```
 
 ```

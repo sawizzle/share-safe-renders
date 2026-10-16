@@ -26,7 +26,7 @@ FULL = os.environ.get("SSR_FULL_CORPUS") == "1"
 @unittest.skipUnless(os.path.exists(CORPUS) and os.path.exists(SCORE), "the corpus builder and scorer are not in this checkout")
 class TestCorpusScore(unittest.TestCase):
     def test_the_package_scanner_matches_the_answer_key(self):
-        with tempfile.TemporaryDirectory(prefix="ssr_corpus_") as td:
+        with tempfile.TemporaryDirectory(prefix="ssrtest_corpus_") as td:
             corpus = os.path.join(td, "corpus")
             flags = [] if FULL else ["--no-heavy", "--many", "50"]
             b = subprocess.run([sys.executable, "-I", "-B", CORPUS, corpus] + flags, stdout=subprocess.PIPE,
@@ -114,7 +114,7 @@ class TestBigMp4Filler(unittest.TestCase):
             seen.append(text)
             return [("P2", "fx" + "@" + "host.example")] if len(seen) == 1 else real(text)
 
-        with tempfile.TemporaryDirectory(prefix="ssr_big_") as td:
+        with tempfile.TemporaryDirectory(prefix="ssrtest_big_") as td:
             c = mc.Corpus(td, 42, {})
             c.work.mkdir(parents=True)
             out = c.work / "big.mp4"
@@ -135,7 +135,7 @@ class TestBigMp4Filler(unittest.TestCase):
             self.skipTest("needs Linux with at least two CPUs to pin one")
         clips = []
         for mode in ("all_cpus", "one_cpu"):
-            with tempfile.TemporaryDirectory(prefix="ssr_big_") as td:
+            with tempfile.TemporaryDirectory(prefix="ssrtest_big_") as td:
                 r = subprocess.run([sys.executable, "-I", "-B", "-c", _CLIP_CODE, CORPUS, td, mode],
                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=300)
                 out = r.stdout.decode("utf-8", "replace")

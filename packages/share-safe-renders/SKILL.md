@@ -12,11 +12,12 @@ or deletes them, and its report never prints the leaked text. The one file it wr
 
 ## If there is no skill folder
 
-If this skill reached you as text (its files came as `### File: share-safe-renders/<path>` blocks in a saved response or in the message) and
-there is no `share-safe-renders` folder on disk, `<SKILL_DIR>` in the commands below points at nothing. Then read `references/no-skill-folder.md`
-first, from that same text. It says which files a task needs (a scan needs `scripts/scan.py` alone), gives a snippet that writes them into a
-fresh temporary folder in the system temp folder, and says how to delete the temporary folder when you are done. Write only the files it lists, do not
-cut a script out of the text any other way or retype it, and treat the temporary folder as `<SKILL_DIR>` in every command of this skill.
+If this skill reached you as text (this file in an answer, the other files in an index, each loaded on its own) and there is no
+`share-safe-renders` folder on disk, `<SKILL_DIR>` in the commands below points at nothing. Then load `references/no-skill-folder.md` first and
+follow it. It says which files a task needs (a scan needs `scripts/scan.py` alone) and gives a short program that makes a fresh folder in the
+system temp folder, writes each file you loaded into it only when its length and SHA-256 are the published ones, and checks the folder before
+anything runs. Treat that folder as `<SKILL_DIR>` in every command of this skill, and delete it when you are done. A script goes into it only
+as the text that loading the file gave you (never from memory, never changed), and never runs before the check has printed its `OK` lines.
 
 ## When to use
 
@@ -48,22 +49,24 @@ A shell can run text that sits in a file or folder name. Double quotes do not st
 - For any other name or folder do not build the command and do not try to quote it. Tell the user which name is not safe to paste, and ask them to copy or rename the file to a plain name first (or to move it into a plain-named folder, or to run the command themselves). Say why, in these words: typographic quotes, non-ASCII characters, `%` and `!` (cmd), `$`, a backtick, quotes, `;` `&` `|` `^` `<` `>` and line breaks are excluded from file names.
 - The `<OUT>` names you choose, and any folder you create, are plain names by the first rule.
 
+**Where to run them.** Run every command of this skill, `python --version` included, from a folder you trust, such as the user's home folder (start the command with `cd ~;` in bash or PowerShell, and give every path in full), never from inside the folder you scan or any other folder of files you received. On Windows use PowerShell or bash, not cmd: cmd starts a program of that name from the working folder (a planted `python.bat`, `py.bat`, `ffmpeg.bat` or `ffprobe.bat`) before the real one on PATH, and `-I` cannot stop that, because Python never starts (measured on Windows 11 with `python --version`, the scan command, the ffmpeg export commands, the ffprobe checks and the Pillow command; Windows PowerShell 5.1 and Git Bash started the real programs). If you have to use cmd, first run `set NoDefaultCurrentDirectoryInExePath=1` in the same cmd session: cmd then no longer looks in the working folder. If each command you run starts a new cmd, put the set command in front of it on the same line, and nothing before it (in cmd, `cd ~;` takes the rest of the line up to the next `&` as a folder name, so a set command after it never runs): `set NoDefaultCurrentDirectoryInExePath=1& <command>`.
+
 ## Workflow
 
 **1. Locate.** Use the file or folder the user named. If they named none, ask. Do not search the disk for renders.
 
-**2. Run.** Check Python first: `python --version` must print 3.9 or newer (see "If Python is missing" below). Then, from any folder:
+**2. Run.** Check Python first: `python --version` must print 3.9 or newer (see "If Python is missing" below). Then, from a folder you trust ("Where to run them" above):
 
 ```sh
-python "<SKILL_DIR>/scripts/scan.py" "<PATH>" --json "<REPORT>"
+python -I -B "<SKILL_DIR>/scripts/scan.py" "<PATH>" --json "<REPORT>"
 ```
 
-- `<SKILL_DIR>` is the folder that contains this SKILL.md (with no skill folder: the temporary folder, see above); use its full path. A relative `scripts/scan.py` works only from inside that folder.
+- `<SKILL_DIR>` is the folder that contains this SKILL.md (with no skill folder: the folder that `references/no-skill-folder.md` makes and checks, see above); use its full path. A relative `scripts/scan.py` works only from inside that folder. `-I` keeps Python from importing a module planted next to the script and `-B` stops it from writing bytecode there; the report and the exit codes are the same as without them.
 - `<PATH>` is a file or a folder. A folder is walked; links are not followed. You may pass several paths. A file name at the end of `<PATH>` follows "Names in commands". Scanning the containing folder instead puts no file name into the command (only the folder path, which is held to the shorter list there).
-- `<REPORT>` is a new `.json` path that is not inside a scanned folder: put it in a folder the user names (for example the parent of the scanned folder), or in a fresh private folder that you create for it (for example with `python -c "import tempfile; print(tempfile.mkdtemp())"`, which prints the new folder's path). Do not put it loose in the shared system temp folder, and not in the working folder when that is the scanned folder. Give every run its own name (`share-safe-report.json`, then `share-safe-report-2.json`). A path inside a scanned folder, or an existing file that is not an earlier report of this scanner, is refused (exit 2).
+- `<REPORT>` is a new `.json` path that is not inside a scanned folder: put it in a folder the user names (for example the parent of the scanned folder), or in a fresh private folder that you create for it (for example with `python -I -c "import tempfile; print(tempfile.mkdtemp())"`, which prints the new folder's path; `-I` keeps a `tempfile.py` in the working folder from running). Do not put it loose in the shared system temp folder. The report stays when you are done (with no skill folder too: only the folder that `references/no-skill-folder.md` makes is deleted), so tell the user where it is. Give every run its own name (`share-safe-report.json`, then `share-safe-report-2.json`). A path inside a scanned folder, or an existing file that is not an earlier report of this scanner, is refused (exit 2).
 - Flags: `--strict` when the whole folder is about to be shared: links and files that are not renders (a .txt, an .svg) then make the run exit 3 and are named under `NOTES`; without it they are only counted. A file it tried to read and could not (WebP, damaged, too big) is listed under `COULD NOT FULLY SCAN` either way; the run exits 3 for it when nothing else was found, and 1 when another file has a finding. `--max-bytes N` for files over 1 GiB. `--time-limit SECONDS` (0 = none) if a file runs out of time. `--follow-root-links` if PATH is itself a link. A path that starts with `-`: put every option first, then `--`, then the paths (`... --json "<REPORT>" -- "<PATH>"`), or write it as `./-name.png`. Do not use `--full-names`.
 
-Keep the exit code of this command. Steps 3 and 4 depend on it. In Windows PowerShell do not cut the output with `| Select-Object -First N`: that leaves `$LASTEXITCODE` at -1 (measured in Windows PowerShell 5.1; a pipe to `Out-Null` or a redirect to a file kept the real code).
+Keep the exit code of this command. Steps 3 and 4 depend on it. In PowerShell read `$LASTEXITCODE` in the same command, or the `(exit n)` at the end of the `RESULT:` line (a usage error, exit 2, prints no `RESULT:` line: read `$LASTEXITCODE` there): a tool that starts a new `powershell.exe` for each command can report 1 for exits 2 and 3 (measured in Windows PowerShell 5.1). In Windows PowerShell do not cut the output with `| Select-Object -First N`: that leaves `$LASTEXITCODE` at -1 (measured in Windows PowerShell 5.1; a pipe to `Out-Null` or a redirect to a file kept the real code).
 
 **3. Read.** Read the printed report. Its verdict is the `RESULT:` line, printed twice: under the summary line and as the last line, so output cut off at either end still shows it. Trust exit 0, 1 or 3 only if that
 line is there. Exit 2 normally prints a usage message instead. A missing `RESULT:` line with exit 0, 1 or 3, or any other exit code, means Python itself failed (for example because it is too old): last row of the table below.
@@ -122,7 +125,7 @@ Next step for the common `COULD NOT FULLY SCAN` codes: `unsupported_media` (WebP
 
 ## Export commands (copy without the metadata; run on the demo files with ffmpeg 5.1, 7.1, 8.1.1 and 9.0.1 on Windows)
 
-Write to a new name. Replace each `<IN.ext>` and `<OUT.ext>` with the real paths, keeping the file extension and the double quotes. Every file name passes "Names in commands" first: a name that does not pass is never pasted, and single quotes do not make it safe.
+Write to a new name. Replace each `<IN.ext>` and `<OUT.ext>` with the real paths, keeping the file extension and the double quotes. Every file name passes "Names in commands" first: a name that does not pass is never pasted, and single quotes do not make it safe. Run them from a folder you trust, not from the folder of the originals ("Where to run them").
 
 ```sh
 ffmpeg -loglevel error -n -i "<IN.mp4>" -map_metadata -1 -map_chapters -1 -c copy "<OUT.mp4>"
@@ -138,7 +141,7 @@ Workflow JSON has no export command: the user opens it, removes the value at the
 
 - Find Python: try `python --version`, then `python3 --version` (macOS, Linux), then `py -3 --version` (Windows). Use whichever prints 3.9 or newer in place of `python` in every command. Only the standard library is needed.
 - If none works, stop. Tell the user: "Python 3.9 or newer is needed to run the scan and was not found; nothing has been scanned." Do not install anything yourself, and do not fall back to reading the files.
-- Always put double quotes around every path, in the scan command and the ffmpeg commands alike, and never single quotes. Windows (PowerShell or cmd): `py -3 "<SKILL_DIR>\scripts\scan.py" "<PATH>" --json "<REPORT>"`. macOS and Linux: `python3 "<SKILL_DIR>/scripts/scan.py" "<PATH>" --json "<REPORT>"`. A folder that "Names in commands" does not allow (it holds `$`, a backtick, `"` or a typographic double quote, `%` or `!`) gets no command: ask the user for a plain folder path, or to run the command themselves.
+- Always put double quotes around every path, in the scan command and the ffmpeg commands alike, and never single quotes. Windows (PowerShell; cmd only as "Where to run them" says): `py -3 -I -B "<SKILL_DIR>\scripts\scan.py" "<PATH>" --json "<REPORT>"`. macOS and Linux: `python3 -I -B "<SKILL_DIR>/scripts/scan.py" "<PATH>" --json "<REPORT>"`. A folder that "Names in commands" does not allow (it holds `$`, a backtick, `"` or a typographic double quote, `%` or `!`) gets no command: ask the user for a plain folder path, or to run the command themselves.
 - `ffmpeg` is needed only for the export commands; if it is missing, say so, point to the Pillow option for PNG and JPEG in `references/how-to-export-clean.md`, and install nothing. `ffprobe` is optional: the scanner uses it as a second witness for MP4 tags when it is in a PATH directory (never the current folder).
 
 ## Files in this skill

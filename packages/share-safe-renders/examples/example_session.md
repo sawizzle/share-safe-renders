@@ -1,15 +1,15 @@
 # Example session
 
-A worked example of an agent following `SKILL.md`, start to finish. The commands and the scanner output are real runs of the scripts in this package on the demo files (the skill folder is written `<SKILL_DIR>`). The assistant's lines were written to follow `SKILL.md` and are filled with the real numbers; this is a worked example, not a recording of a model.
+A worked example of an agent following `SKILL.md`, start to finish. The commands and the scanner output are real runs of the scripts in this package on the demo files. The skill folder is written `<SKILL_DIR>`, and the full path of the user's project folder (the folder that holds `renders/`) is written `<PROJECT>`, in the commands and in the output. Every command starts with `cd ~;` and gives every path in full, as "Where to run them" in `SKILL.md` says; each was run from an empty folder that stood for the home folder. The assistant's lines were written to follow `SKILL.md` and are filled with the real numbers; this is a worked example, not a recording of a model.
 
 ---
 
 **User:** I'm going to post the six renders in `renders/` on a forum, one at a time. Can you check them first?
 
-**Assistant:** The folder is `renders/` (step 1). Only the renders will be posted, not the whole folder, so I will not use `--strict`. I'll check Python first, then scan the folder and write the report next to it, not inside it (step 2).
+**Assistant:** The folder is `renders/` in your project folder, `<PROJECT>/renders` (step 1). Only the renders will be posted, not the whole folder, so I will not use `--strict`. I'll run every command from your home folder with every path in full ("Where to run them"), check Python first, then scan the folder and write the report next to it, not inside it (step 2).
 
 ```sh
-python --version
+cd ~; python --version
 ```
 
 ```
@@ -17,10 +17,10 @@ Python 3.14.6
 ```
 
 ```sh
-python "<SKILL_DIR>/scripts/scan.py" "renders" --json "share-safe-report.json"
+cd ~; python -I -B "<SKILL_DIR>/scripts/scan.py" "<PROJECT>/renders" --json "<PROJECT>/share-safe-report.json"
 ```
 
-Exit code: **1**. I'm reading the printed report, not the files themselves (step 3).
+Exit code: **1**. I'm reading the printed report, not the files themselves (step 3). The JSON report is `<PROJECT>/share-safe-report.json`; it stays there.
 
 ```
 Share-Safe Renders scan.py 1.2.0
@@ -28,26 +28,26 @@ Scanned 6 file(s): 5 with findings, 12 finding(s), 0 problem(s); 0 link(s) not f
 RESULT: FINDINGS - do not share these files as they are (exit 1)
 
 FINDINGS (values are never printed: only class, place, length and a hash prefix)
-  [HIGH] K2  file=renders\01_png_api_key_and_username.png  carrier=png:tEXt  location=tEXt[prompt]:node:11/inputs/api_key  node=11  bypassed=no  length=51  sha256=f624a018  (field=api_key)
-  [HIGH] K1  file=renders\01_png_api_key_and_username.png  carrier=png:tEXt  location=tEXt[prompt]:node:11/inputs/api_key  node=11  bypassed=no  length=51  sha256=f624a018  (vendor=openai)
-  [HIGH] K3+H3  file=renders\02_png_ztxt_webhook.png  carrier=png:zTXt  location=zTXt[workflow]:nodes[1]/widgets_values[0]  node=7  bypassed=no  length=120  sha256=cebc270e  (kind=discord_webhook)
-  [HIGH] K2+H1  file=renders\03_png_bypassed_node_secret.png  carrier=png:tEXt  location=tEXt[workflow]:nodes[2]/widgets_values[0]/api_key  node=12  bypassed=yes  length=51  sha256=988de85f  (field=api_key)
-  [HIGH] K1+H1  file=renders\03_png_bypassed_node_secret.png  carrier=png:tEXt  location=tEXt[workflow]:nodes[2]/widgets_values[0]  node=12  bypassed=yes  length=51  sha256=988de85f  (vendor=openai)
-  [HIGH] K1  file=renders\05_mp4_prompt_tag_and_free_box.mp4  carrier=mp4:box:free  location=free:raw  node=-  bypassed=no  length=51  sha256=924ceebd  (vendor=openai)
-  [HIGH] G1  file=renders\06_jpeg_exif_gps.jpg  carrier=jpeg:exif  location=exif:GPS  node=-  bypassed=no  length=48  sha256=9666fc5f  (kind=exif_gps;tags=lat,lon)
-  [MEDIUM] P1  file=renders\01_png_api_key_and_username.png  carrier=png:tEXt  location=tEXt[prompt]:node:9/inputs/image  node=9  bypassed=no  length=12  sha256=505148e3  (kind=windows_home)
-  [MEDIUM] P2  file=renders\05_mp4_prompt_tag_and_free_box.mp4  carrier=mp4:tag  location=moov/udta/meta/ilst/prompt:node:20/inputs/~b0a1bd37  node=20  bypassed=no  length=23  sha256=56797958  (kind=email)
-  [MEDIUM] M1  file=renders\05_mp4_prompt_tag_and_free_box.mp4  carrier=mp4:tag  location=moov/udta/meta/ilst/prompt  node=-  bypassed=no  length=773  sha256=1323e953  (workflow_json_in_tag;format=api;tag=prompt)
-  [MEDIUM] M1  file=renders\05_mp4_prompt_tag_and_free_box.mp4  carrier=mp4:box:free  location=free  node=-  bypassed=no  length=59  sha256=17b7a46b  (hidden_box;payload=text)
-  [LOW] P3  file=renders\05_mp4_prompt_tag_and_free_box.mp4  carrier=mp4:tag  location=moov/udta/meta/ilst/prompt:node:20/inputs/server  node=20  bypassed=no  length=13  sha256=6445a781  (kind=private_ipv4)
+  [HIGH] K2  file=<PROJECT>/renders\01_png_api_key_and_username.png  carrier=png:tEXt  location=tEXt[prompt]:node:11/inputs/api_key  node=11  bypassed=no  length=51  sha256=23478fbb  (field=api_key)
+  [HIGH] K1  file=<PROJECT>/renders\01_png_api_key_and_username.png  carrier=png:tEXt  location=tEXt[prompt]:node:11/inputs/api_key  node=11  bypassed=no  length=51  sha256=23478fbb  (vendor=openai)
+  [HIGH] K3+H3  file=<PROJECT>/renders\02_png_ztxt_webhook.png  carrier=png:zTXt  location=zTXt[workflow]:nodes[1]/widgets_values[0]  node=7  bypassed=no  length=120  sha256=dc8fba79  (kind=discord_webhook)
+  [HIGH] K2+H1  file=<PROJECT>/renders\03_png_bypassed_node_secret.png  carrier=png:tEXt  location=tEXt[workflow]:nodes[2]/widgets_values[0]/api_key  node=12  bypassed=yes  length=51  sha256=aaf85b49  (field=api_key)
+  [HIGH] K1+H1  file=<PROJECT>/renders\03_png_bypassed_node_secret.png  carrier=png:tEXt  location=tEXt[workflow]:nodes[2]/widgets_values[0]  node=12  bypassed=yes  length=51  sha256=aaf85b49  (vendor=openai)
+  [HIGH] K1  file=<PROJECT>/renders\05_mp4_prompt_tag_and_free_box.mp4  carrier=mp4:box:free  location=free:raw  node=-  bypassed=no  length=51  sha256=4ef3e6b6  (vendor=openai)
+  [HIGH] G1  file=<PROJECT>/renders\06_jpeg_exif_gps.jpg  carrier=jpeg:exif  location=exif:GPS  node=-  bypassed=no  length=48  sha256=eb2fbc4a  (kind=exif_gps;tags=lat,lon)
+  [MEDIUM] P1  file=<PROJECT>/renders\01_png_api_key_and_username.png  carrier=png:tEXt  location=tEXt[prompt]:node:9/inputs/image  node=9  bypassed=no  length=12  sha256=d4d4a8e3  (kind=windows_home)
+  [MEDIUM] P2  file=<PROJECT>/renders\05_mp4_prompt_tag_and_free_box.mp4  carrier=mp4:tag  location=moov/udta/meta/ilst/prompt:node:20/inputs/~211edf9e  node=20  bypassed=no  length=23  sha256=5c4f4853  (kind=email)
+  [MEDIUM] M1  file=<PROJECT>/renders\05_mp4_prompt_tag_and_free_box.mp4  carrier=mp4:tag  location=moov/udta/meta/ilst/prompt  node=-  bypassed=no  length=773  sha256=136130ee  (workflow_json_in_tag;format=api;tag=prompt)
+  [MEDIUM] M1  file=<PROJECT>/renders\05_mp4_prompt_tag_and_free_box.mp4  carrier=mp4:box:free  location=free  node=-  bypassed=no  length=59  sha256=67a651a0  (hidden_box;payload=text)
+  [LOW] P3  file=<PROJECT>/renders\05_mp4_prompt_tag_and_free_box.mp4  carrier=mp4:tag  location=moov/udta/meta/ilst/prompt:node:20/inputs/server  node=20  bypassed=no  length=13  sha256=90b5fab9  (kind=private_ipv4)
 
 NOTES
-  embedded_comfyui_api_json  file=renders\01_png_api_key_and_username.png
-  embedded_comfyui_ui_json  file=renders\02_png_ztxt_webhook.png
-  embedded_comfyui_api_json  file=renders\03_png_bypassed_node_secret.png
-  embedded_comfyui_ui_json  file=renders\03_png_bypassed_node_secret.png
-  embedded_comfyui_api_json  file=renders\04_clean.png
-  skipped_other  file=renders\DEMO_EXPECTED.md
+  embedded_comfyui_api_json  file=<PROJECT>/renders\01_png_api_key_and_username.png
+  embedded_comfyui_ui_json  file=<PROJECT>/renders\02_png_ztxt_webhook.png
+  embedded_comfyui_api_json  file=<PROJECT>/renders\03_png_bypassed_node_secret.png
+  embedded_comfyui_ui_json  file=<PROJECT>/renders\03_png_bypassed_node_secret.png
+  embedded_comfyui_api_json  file=<PROJECT>/renders\04_clean.png
+  skipped_other  file=<PROJECT>/renders\DEMO_EXPECTED.md
 
 KNOWN MISSES (not detected by design)
   - Data hidden in pixel bits (steganography, LSB or otherwise).
@@ -79,7 +79,7 @@ RESULT: FINDINGS - do not share these files as they are (exit 1)
 | high | K1 | a string shaped like a vendor API key or token (OpenAI, Anthropic, GitHub, AWS, Google, Slack, Stripe live, Hugging Face) | `renders/05_mp4_prompt_tag_and_free_box.mp4` | `mp4:box:free, free:raw` |
 | high | G1 | GPS coordinates (EXIF, XMP, an MP4/MOV location tag or the MP4 `loci` box) | `renders/06_jpeg_exif_gps.jpg` | `jpeg:exif, exif:GPS` |
 | medium | P1 | a home-folder path that reveals an account name (Windows, macOS and Linux forms) | `renders/01_png_api_key_and_username.png` | `png:tEXt, tEXt[prompt]:node:9/inputs/image, node 9` |
-| medium | P2 | an e-mail address (documentation addresses such as example.com are ignored) | `renders/05_mp4_prompt_tag_and_free_box.mp4` | `mp4:tag, moov/udta/meta/ilst/prompt:node:20/inputs/~b0a1bd37, node 20` |
+| medium | P2 | an e-mail address (documentation addresses such as example.com are ignored) | `renders/05_mp4_prompt_tag_and_free_box.mp4` | `mp4:tag, moov/udta/meta/ilst/prompt:node:20/inputs/~211edf9e, node 20` |
 | medium | M1 | hidden MP4/MOV data: a tag holding workflow or prompt JSON, or data in a free/uuid/unknown top-level box or after the last box | `renders/05_mp4_prompt_tag_and_free_box.mp4` | `mp4:tag, moov/udta/meta/ilst/prompt` |
 | medium | M1 | hidden MP4/MOV data: a tag holding workflow or prompt JSON, or data in a free/uuid/unknown top-level box or after the last box | `renders/05_mp4_prompt_tag_and_free_box.mp4` | `mp4:box:free, free` |
 | low | P3 | a private-network address (10.x, 172.16-31.x, 192.168.x) or a .local/.lan/.internal host name | `renders/05_mp4_prompt_tag_and_free_box.mp4` | `mp4:tag, moov/udta/meta/ilst/prompt:node:20/inputs/server, node 20` |
@@ -92,15 +92,15 @@ The scanner did not examine 1 file(s) in the folder because they are not renders
 1. Export a copy of each flagged file without its metadata, into a new folder (the originals stay untouched). Every file name here is plain (letters, digits, `_` and `.`), so the commands can be built from them; a file whose name is not plain would get no command, only a request to rename it ("Names in commands" in `SKILL.md`):
 
 ```sh
-mkdir reexported
-ffmpeg -loglevel error -n -i "renders/01_png_api_key_and_username.png" -map_metadata -1 "reexported/01_png_api_key_and_username.png"
-ffmpeg -loglevel error -n -i "renders/02_png_ztxt_webhook.png" -map_metadata -1 "reexported/02_png_ztxt_webhook.png"
-ffmpeg -loglevel error -n -i "renders/03_png_bypassed_node_secret.png" -map_metadata -1 "reexported/03_png_bypassed_node_secret.png"
-ffmpeg -loglevel error -n -i "renders/05_mp4_prompt_tag_and_free_box.mp4" -map_metadata -1 -map_chapters -1 -c copy "reexported/05_mp4_prompt_tag_and_free_box.mp4"
-ffmpeg -loglevel error -n -i "renders/06_jpeg_exif_gps.jpg" -map_metadata -1 -q:v 2 "reexported/06_jpeg_exif_gps.jpg"
+cd ~; mkdir "<PROJECT>/reexported"
+cd ~; ffmpeg -loglevel error -n -i "<PROJECT>/renders/01_png_api_key_and_username.png" -map_metadata -1 "<PROJECT>/reexported/01_png_api_key_and_username.png"
+cd ~; ffmpeg -loglevel error -n -i "<PROJECT>/renders/02_png_ztxt_webhook.png" -map_metadata -1 "<PROJECT>/reexported/02_png_ztxt_webhook.png"
+cd ~; ffmpeg -loglevel error -n -i "<PROJECT>/renders/03_png_bypassed_node_secret.png" -map_metadata -1 "<PROJECT>/reexported/03_png_bypassed_node_secret.png"
+cd ~; ffmpeg -loglevel error -n -i "<PROJECT>/renders/05_mp4_prompt_tag_and_free_box.mp4" -map_metadata -1 -map_chapters -1 -c copy "<PROJECT>/reexported/05_mp4_prompt_tag_and_free_box.mp4"
+cd ~; ffmpeg -loglevel error -n -i "<PROJECT>/renders/06_jpeg_exif_gps.jpg" -map_metadata -1 -q:v 2 "<PROJECT>/reexported/06_jpeg_exif_gps.jpg"
 ```
 
-2. Run those and tell me when the 5 copies exist. I will then scan them (`python "<SKILL_DIR>/scripts/scan.py" "reexported" --json "share-safe-report-2.json"`) and check that the number of files scanned is 5.
+2. Run those and tell me when the 5 copies exist. I will then scan them (`cd ~; python -I -B "<SKILL_DIR>/scripts/scan.py" "<PROJECT>/reexported" --json "<PROJECT>/share-safe-report-2.json"`) and check that the number of files scanned is 5.
 3. The files with a key or webhook finding (K1, K2, K3): if they were ever posted or sent before, treat that key or webhook as exposed and revoke it at the provider. Removing metadata does not take it back.
 
 **What this scan cannot see**
@@ -115,24 +115,24 @@ ffmpeg -loglevel error -n -i "renders/06_jpeg_exif_gps.jpg" -map_metadata -1 -q:
 
 **User:** Please run those exports into a folder called `reexported` and check the result.
 
-**Assistant:** You asked for the exports, so I'll run them, writing only to new names in `reexported/` (step 5). Each command exited 0 and printed nothing.
+**Assistant:** You asked for the exports, so I'll run them, writing only to new names in `reexported/` (step 5). Each ffmpeg command exited 0 and printed nothing.
 
 ```sh
-mkdir reexported
-ffmpeg -loglevel error -n -i "renders/01_png_api_key_and_username.png" -map_metadata -1 "reexported/01_png_api_key_and_username.png"
-ffmpeg -loglevel error -n -i "renders/02_png_ztxt_webhook.png" -map_metadata -1 "reexported/02_png_ztxt_webhook.png"
-ffmpeg -loglevel error -n -i "renders/03_png_bypassed_node_secret.png" -map_metadata -1 "reexported/03_png_bypassed_node_secret.png"
-ffmpeg -loglevel error -n -i "renders/05_mp4_prompt_tag_and_free_box.mp4" -map_metadata -1 -map_chapters -1 -c copy "reexported/05_mp4_prompt_tag_and_free_box.mp4"
-ffmpeg -loglevel error -n -i "renders/06_jpeg_exif_gps.jpg" -map_metadata -1 -q:v 2 "reexported/06_jpeg_exif_gps.jpg"
+cd ~; mkdir "<PROJECT>/reexported"
+cd ~; ffmpeg -loglevel error -n -i "<PROJECT>/renders/01_png_api_key_and_username.png" -map_metadata -1 "<PROJECT>/reexported/01_png_api_key_and_username.png"
+cd ~; ffmpeg -loglevel error -n -i "<PROJECT>/renders/02_png_ztxt_webhook.png" -map_metadata -1 "<PROJECT>/reexported/02_png_ztxt_webhook.png"
+cd ~; ffmpeg -loglevel error -n -i "<PROJECT>/renders/03_png_bypassed_node_secret.png" -map_metadata -1 "<PROJECT>/reexported/03_png_bypassed_node_secret.png"
+cd ~; ffmpeg -loglevel error -n -i "<PROJECT>/renders/05_mp4_prompt_tag_and_free_box.mp4" -map_metadata -1 -map_chapters -1 -c copy "<PROJECT>/reexported/05_mp4_prompt_tag_and_free_box.mp4"
+cd ~; ffmpeg -loglevel error -n -i "<PROJECT>/renders/06_jpeg_exif_gps.jpg" -map_metadata -1 -q:v 2 "<PROJECT>/reexported/06_jpeg_exif_gps.jpg"
 ```
 
 Now the scan of the copies, with a new report name outside the copies folder:
 
 ```sh
-python "<SKILL_DIR>/scripts/scan.py" "reexported" --json "share-safe-report-2.json"
+cd ~; python -I -B "<SKILL_DIR>/scripts/scan.py" "<PROJECT>/reexported" --json "<PROJECT>/share-safe-report-2.json"
 ```
 
-Exit code: **0**.
+Exit code: **0**. The JSON report is `<PROJECT>/share-safe-report-2.json`; it stays there.
 
 ```
 Share-Safe Renders scan.py 1.2.0
@@ -178,10 +178,10 @@ RESULT: NOTHING FOUND in what was scanned (this is not proof of safety; see know
 **Assistant:** The whole folder will be shared, so I'll add `--strict` (step 2): links and files that are not renders must not be skipped silently. The report goes next to the folder, with a new name.
 
 ```sh
-python "<SKILL_DIR>/scripts/scan.py" "extras" --strict --json "share-safe-report-3.json"
+cd ~; python -I -B "<SKILL_DIR>/scripts/scan.py" "<PROJECT>/extras" --strict --json "<PROJECT>/share-safe-report-3.json"
 ```
 
-Exit code: **3**.
+Exit code: **3**. The JSON report is `<PROJECT>/share-safe-report-3.json`; it stays there.
 
 ```
 Share-Safe Renders scan.py 1.2.0
@@ -189,13 +189,13 @@ Scanned 1 file(s): 0 with findings, 0 finding(s), 3 problem(s); 0 link(s) not fo
 RESULT: COULD NOT SCAN everything and found nothing else - treat as NOT clean (exit 3)
 
 COULD NOT FULLY SCAN (never treat these as clean)
-  ERROR unsupported_media  file=extras\loop.webp
-  ERROR png_truncated  file=extras\render_cut.png  carrier=png
+  ERROR unsupported_media  file=<PROJECT>/extras\loop.webp
+  ERROR png_truncated  file=<PROJECT>/extras\render_cut.png  carrier=png
   ERROR strict_skipped_entries  file=(all paths)
 
 NOTES
-  skipped_other  file=extras\notes.txt
-  embedded_comfyui_api_json  file=extras\render_cut.png
+  skipped_other  file=<PROJECT>/extras\notes.txt
+  embedded_comfyui_api_json  file=<PROJECT>/extras\render_cut.png
 
 KNOWN MISSES (not detected by design)
   - Data hidden in pixel bits (steganography, LSB or otherwise).

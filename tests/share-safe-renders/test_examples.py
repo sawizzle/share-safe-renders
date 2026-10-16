@@ -137,12 +137,49 @@ class TestSessionFollowsSkillMd(unittest.TestCase):
             self.assertIn(tail, act)
 
     def test_commands_are_the_skill_md_commands(self):
-        self.assertIn('python "<SKILL_DIR>/scripts/scan.py" "renders" --json "share-safe-report.json"', SESSION)
-        self.assertIn('python "<SKILL_DIR>/scripts/scan.py" "reexported" --json "share-safe-report-2.json"', SESSION)
-        self.assertIn('python "<SKILL_DIR>/scripts/scan.py" "extras" --strict --json "share-safe-report-3.json"', SESSION)
-        for line in re.findall(r"^ffmpeg .+$", SESSION, re.M):
-            self.assertRegex(line, r'^ffmpeg -loglevel error -n -i "[^"]+" -map_metadata -1 .*"[^"]+"$')
-        self.assertIn("mkdir reexported", SESSION)
+        self.assertIn('cd ~; python -I -B "<SKILL_DIR>/scripts/scan.py" "<PROJECT>/renders" --json "<PROJECT>/share-safe-report.json"', SESSION)
+        self.assertIn('cd ~; python -I -B "<SKILL_DIR>/scripts/scan.py" "<PROJECT>/reexported" --json "<PROJECT>/share-safe-report-2.json"', SESSION)
+        self.assertIn('cd ~; python -I -B "<SKILL_DIR>/scripts/scan.py" "<PROJECT>/extras" --strict --json "<PROJECT>/share-safe-report-3.json"', SESSION)
+        ffmpeg = re.findall(r"^cd ~; ffmpeg .+$", SESSION, re.M)
+        self.assertEqual(len(ffmpeg), 10, "five exports, given in act 1 and run in act 2")
+        for line in ffmpeg:
+            self.assertRegex(line, r'^cd ~; ffmpeg -loglevel error -n -i "<PROJECT>/renders/[^"]+" -map_metadata -1 .*"<PROJECT>/reexported/[^"]+"$')
+        self.assertEqual(SESSION.count('\ncd ~; mkdir "<PROJECT>/reexported"\n'), 2)
+        # "Where to run them" in SKILL.md: start the command with `cd ~;`, give every path in full, never run from the folder
+        # you scan. The third audit of 1.0.2 found the session running relative paths from the folder that holds renders/.
+        def problems(text):
+            lines = [ln for block in re.findall(r"^```sh\n(.*?)^```$", text, re.S | re.M) for ln in block.splitlines()]
+            lines += [span for span in re.findall(r"`([^`\n]+)`", re.sub(r"```.*?```", "", text, flags=re.S))
+                      if re.match(r"(cd ~; )?(python|python3|py|ffmpeg|ffprobe|mkdir) ", span)]
+            out = []
+            for line in lines:
+                if not line.startswith("cd ~; "):
+                    out.append("does not start with cd ~;: " + line)
+                tokens = re.findall(r'"[^"]*"|\S+', line[len("cd ~; "):] if line.startswith("cd ~; ") else line)
+                for before, token in zip(tokens, tokens[1:]):             # every token after the program, with the one before it
+                    if token.startswith('"'):
+                        if not re.fullmatch(r'"<(SKILL_DIR|PROJECT)>/[^"]*"', token):
+                            out.append("not a full path: %s in %s" % (token, line))
+                    elif not token.startswith("-") and not (before.startswith("-") and re.fullmatch(r"-?\d+|copy|error", token)):
+                        out.append("an unquoted argument that is not an option value: %s in %s" % (token, line))
+            return lines, out
+        lines, found = problems(SESSION)
+        self.assertEqual(len(lines), 17, "the version check, three scans, two blocks of six, and the re-scan named in act 1")
+        self.assertEqual(found, [])
+        self.assertIn("is written `<PROJECT>`, in the commands and in the output", SESSION)
+        self.assertIn("Every command starts with `cd ~;` and gives every path in full", SESSION)
+        self.assertNotRegex(norm_text(SESSION), r"[A-Za-z]:/|/tmp/|ssrtest_", "no real path of the machine that made it")
+        # SKILL.md step 2: the report stays, so the user is told where it is
+        for act, suffix in zip(self.ACTS, ("", "-2", "-3")):
+            self.assertIn("The JSON report is `<PROJECT>/share-safe-report%s.json`; it stays there." % suffix, act)
+        # negative controls: the 1.0.2 session's forms, and a bare relative argument (the third audit's reviewer)
+        for old in ('```sh\npython -I -B "<SKILL_DIR>/scripts/scan.py" "renders" --json "share-safe-report.json"\n```\n',
+                    '```sh\nmkdir reexported\n```\n', '```sh\ncd ~; ffmpeg -i "renders/a.png" "<PROJECT>/b.png"\n```\n',
+                    'I will then scan them (`python -I -B "<SKILL_DIR>/scripts/scan.py" "reexported"`)',
+                    'I will then scan them (`cd ~; python -I -B "<SKILL_DIR>/scripts/scan.py" reexported --json share-safe-report-2.json`)',
+                    '```sh\ncd ~; mkdir reexported\n```\n'):
+            self.assertTrue(problems(old)[1], old)
+        self.assertEqual(problems('```sh\ncd ~; ffmpeg -loglevel error -n -i "<PROJECT>/a.jpg" -map_metadata -1 -q:v 2 "<PROJECT>/b.jpg"\n```\n')[1], [])
 
     def test_the_assistant_never_calls_anything_clean_or_safe_and_prints_no_value(self):
         for act in self.ACTS:
@@ -156,7 +193,7 @@ class TestSessionFollowsSkillMd(unittest.TestCase):
 
     def test_the_copies_are_counted_before_the_assistant_says_they_were_checked(self):
         act = self.ACTS[1]
-        made = len(re.findall(r"^ffmpeg ", act, re.M))
+        made = len(re.findall(r"^cd ~; ffmpeg ", act, re.M))
         scanned = int(re.search(r"Scanned (\d+) file\(s\)", act).group(1))
         self.assertEqual(made, scanned)
         self.assertIn("%d copies were made and %d were scanned" % (made, scanned), act)
@@ -171,7 +208,8 @@ class TestSessionFollowsSkillMd(unittest.TestCase):
 
     def test_exports_are_run_only_after_the_user_asks_and_write_to_new_names(self):
         a1, a2 = self.ACTS[0], self.ACTS[1]
-        self.assertNotIn("\nffmpeg ", re.sub(r"\*\*How to fix\*\*.*", "", a1, flags=re.S).replace("**Assistant:**", ""))
+        before_the_fix = re.sub(r"\*\*How to fix\*\*.*", "", a1, flags=re.S).replace("**Assistant:**", "")
+        self.assertNotRegex(before_the_fix, r"\n(cd ~; )?ffmpeg ")
         self.assertIn("**User:** Please run those exports", a2)
         self.assertIn("writing only to new names in `reexported/`", a2)
 
@@ -221,8 +259,12 @@ class TestReproducible(unittest.TestCase):
     def test_regenerating_from_real_runs_gives_the_committed_files(self):
         if not have_ffmpeg():
             self.skipTest("ffmpeg/ffprobe not on PATH: the demo MP4 and the exports cannot be rebuilt")
-        with tempfile.TemporaryDirectory(prefix="ssr_regen_") as td:
-            fresh = ME.build(td)
+        with tempfile.TemporaryDirectory(prefix="ssrtest_regen_") as td:
+            try:
+                fresh = ME.build(td)
+            except ME.NeedsPlainTemp:
+                self.skipTest("the scanner shortens or escapes a part of this temp folder's path, so the session's <PROJECT> "
+                              "cannot be written into its output; set TMP, TEMP or TMPDIR to a short plain folder")
         self.assertEqual(sorted(fresh), ["example_session.md", "listing/demo_request.md", "listing/demo_result.md",
                                          "sample_report.json", "sample_report.md"])
         self.assertEqual(norm_json(fresh["sample_report.json"]), norm_json(read_text(os.path.join(EXAMPLES, "sample_report.json"))))

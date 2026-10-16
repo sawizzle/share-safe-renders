@@ -183,6 +183,11 @@ class TestStructure(unittest.TestCase):
                        "bypassed (the ComfyUI node was bypassed or muted: it did not run, but its values are still saved)",
                        "`COULD NOT FULLY SCAN` (the printed section that lists files it could not read, or read only in part)",
                        "do not cut the output with `| Select-Object -First N`: that leaves `$LASTEXITCODE` at -1",
+                       # the last read of 1.0.2 and its re-read (run in test_v102_no_skill_folder.py, ShellTests, on Windows: the
+                       # usage error --nope prints no RESULT line)
+                       "In PowerShell read `$LASTEXITCODE` in the same command, or the `(exit n)` at the end of the `RESULT:` line (a "
+                       "usage error, exit 2, prints no `RESULT:` line: read `$LASTEXITCODE` there): a tool that starts a new `powershell.exe` for each command can report 1 for exits 2 and 3 (measured in Windows "
+                       "PowerShell 5.1).",
                        "Scanning the containing folder instead puts no file name into the command",
                        "Say them in plain words when the user is not a specialist"):
             self.assertIn(needle, flat, needle)
@@ -486,8 +491,16 @@ class TestHeadToHeadNumbersAreCopiedExactly(unittest.TestCase):
 
 class TestNoOverclaims(unittest.TestCase):
     def test_no_overclaim_in_any_doc(self):
+        # The one ```python block of the package is the extractor program of references/no-skill-folder.md (code, not a claim:
+        # its variable `todo` would read as TODO). test_v102_no_skill_folder.py pins that block byte for byte to the program
+        # generated from the package scripts, so it is left out here and nothing else is.
         for name, text in ALL_DOCS.items():
-            self.assertEqual(overclaim_hits(text), [], name)
+            prose = re.sub(r"^```python\n.*?^```$", "", text, flags=re.S | re.M)
+            self.assertEqual(prose.count("```python"), 0, name)
+            self.assertEqual(overclaim_hits(prose), [], name)
+        self.assertEqual(sum(t.count("```python\n") for t in ALL_DOCS.values()), 1, "only the extractor program is a python block")
+        self.assertTrue(overclaim_hits(re.sub(r"^```python\n.*?^```$", "", "TODO\n```python\nx\n```\n", flags=re.S | re.M)),
+                        "negative control: prose outside the block is still checked")
 
     def test_the_overclaim_checker_can_fail(self):
         for bad in ("It finds every secret.", "A 100% reliable check.", "This replaces exiftool.", "It is guaranteed safe.",
@@ -533,9 +546,9 @@ class TestReadme(unittest.TestCase):
 
     def test_three_try_it_commands(self):
         block = re.search(r"## Try it.*?```sh\n(.*?)```", README, re.S).group(1).strip().splitlines()
-        self.assertEqual(block, ['python "<SKILL_DIR>/scripts/make_demo.py" "<WORK>/demo"',
-                                 'python "<SKILL_DIR>/scripts/scan.py" "<WORK>/demo" --json "<WORK>/demo_report.json"',
-                                 'python "<SKILL_DIR>/scripts/scan.py" "<WORK>/demo/04_clean.png"'])
+        self.assertEqual(block, ['python -I -B "<SKILL_DIR>/scripts/make_demo.py" "<WORK>/demo"',
+                                 'python -I -B "<SKILL_DIR>/scripts/scan.py" "<WORK>/demo" --json "<WORK>/demo_report.json"',
+                                 'python -I -B "<SKILL_DIR>/scripts/scan.py" "<WORK>/demo/04_clean.png"'])
 
     def test_permissions_paragraph_matches_the_static_checks(self):
         p = " ".join(README.split("## Permissions")[1].split("## Source and tests")[0].split())
